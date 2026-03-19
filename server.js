@@ -5,6 +5,7 @@ const pool = require('./src/config/db');
 
 
 const authRoutes = require('./src/routes/authRoutes');
+const serviceRoutes = require('./src/routes/serviceRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,7 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/auth', authRoutes);
+app.use('/api/services', serviceRoutes);
 
 
 pool.query('SELECT NOW()', (err, res) => {

@@ -30,4 +30,65 @@ const getAllServices = async (req, res) => {
     }
 };
 
-module.exports = { createService, getAllServices };
+const getServiceById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const service = await pool.query(
+            'SELECT services.*, users.name as provider_name, users.email as provider_email FROM services JOIN users ON services.user_id = users.id WHERE services.id = $1',
+            [id]
+        );
+
+        if (service.rows.length === 0) {
+            return res.status(404).json({ message: "Usluga nije pronađena." });
+        }
+        res.json(service.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+
+const updateService = async (req, res) => {
+    const { id } = req.params;
+    const { title, description, price, category } = req.body;
+    const userId = req.user.id;
+
+    try {
+        const service = await pool.query('SELECT * FROM services WHERE id = $1', [id]);
+        
+        if (service.rows.length === 0) return res.status(404).json({ message: "Usluga nije pronađena." });
+        if (service.rows[0].user_id !== userId) return res.status(403).json({ message: "Nemate ovlasti za izmjenu ove usluge." });
+
+        const updatedService = await pool.query(
+            'UPDATE services SET title = $1, description = $2, price = $3, category = $4 WHERE id = $5 RETURNING *',
+            [title, description, price, category, id]
+        );
+
+        res.json(updatedService.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+
+const deleteService = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const service = await pool.query('SELECT * FROM services WHERE id = $1', [id]);
+
+        if (service.rows.length === 0) return res.status(404).json({ message: "Usluga nije pronađena." });
+        if (service.rows[0].user_id !== userId) return res.status(403).json({ message: "Nemate ovlasti za brisanje ove usluge." });
+
+        await pool.query('DELETE FROM services WHERE id = $1', [id]);
+        res.json({ message: "Usluga uspješno obrisana." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { createService, getAllServices, getServiceById, updateService, deleteService };

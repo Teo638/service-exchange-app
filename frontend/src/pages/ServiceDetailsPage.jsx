@@ -77,7 +77,6 @@ function ServiceDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <button onClick={() => navigate('/')} className="text-gray-400 hover:text-orange-500 text-sm transition">
@@ -89,10 +88,8 @@ function ServiceDetailsPage() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Lijeva strana - detalji usluge */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Glavna kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {service.category && (
                 <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full font-semibold">
@@ -118,10 +115,8 @@ function ServiceDetailsPage() {
 
           </div>
 
-          {/* Desna strana - cijena + akcija */}
           <div className="space-y-4">
 
-            {/* Cijena kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <div className="text-center mb-6">
                 <p className="text-gray-400 text-sm mb-1">Cijena usluge</p>
@@ -159,7 +154,6 @@ function ServiceDetailsPage() {
               )}
             </div>
 
-            {/* Prodavač kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
                 Ponuđač usluge

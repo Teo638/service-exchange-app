@@ -60,7 +60,6 @@ function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-orange-500 text-sm transition">
@@ -72,7 +71,6 @@ function ProfilePage() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Lijeva strana - info o korisniku */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
               <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center text-3xl font-bold text-white mx-auto mb-4">
@@ -98,7 +96,6 @@ function ProfilePage() {
             </div>
           </div>
 
-          {/* Desna strana - usluge korisnika */}
           <div className="lg:col-span-2">
             <h2 className="text-lg font-bold text-slate-800 mb-4">
               Usluge korisnika {profile.name}

@@ -23,9 +23,11 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Prijava</h2>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl flex overflow-hidden">
+
+         <div className="w-full md:w-1/2 p-10">
+        <h2 className="text-2xl text-center font-bold text-slate-900 mb-2">Prijava</h2>
         {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -34,7 +36,7 @@ function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
               placeholder="vas@email.com"
               required
             />
@@ -45,24 +47,31 @@ function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
               placeholder="••••••••"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+            className="w-full bg-orange-500 text-white py-2.5 rounded-xl hover:bg-orange-600 transition font-semibold"
           >
             Prijavi se
           </button>
         </form>
-        <p className="text-center text-sm text-gray-600 mt-4">
-          Nemaš račun?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Registriraj se
-          </Link>
-        </p>
+      </div>
+      <div className="hidden md:flex w-1/2 bg-orange-500 flex-col items-center justify-center p-10 text-white">
+          <p className="text-3xl font-bold mb-4 text-center">🤝 Service Exchange</p>
+          <p className="text-center text-orange-100 text-sm leading-relaxed">
+            Platforma za razmjenu usluga. Pronađi uslugu koja ti treba ili ponudi svoje znanje drugima.
+          </p>
+          <div className="mt-8 border border-orange-400 rounded-xl px-6 py-3">
+            <Link to="/register" className="text-white font-semibold text-sm">
+              Nemate račun? Registrirajte se →
+            </Link>
+          </div>
+        </div>
+
       </div>
     </div>
   )

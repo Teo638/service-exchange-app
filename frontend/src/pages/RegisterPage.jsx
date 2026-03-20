@@ -10,10 +10,15 @@ function RegisterPage() {
   const [error, setError] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    if (password !== confirmPassword) {
+     setError('Lozinke se ne podudaraju.')
+     return
+    }
     try {
       await api.post('/auth/register', { name, email, password })
       const res = await api.post('/auth/login', { email, password })
@@ -25,10 +30,10 @@ function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Registracija</h2>
-        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow-lg w-full max-w-md p-10">
+        <h2 className="text-2xl text-center font-bold text-slate-900 mb-2">Registracija</h2>
+        {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Ime</label>
@@ -36,7 +41,7 @@ function RegisterPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
               placeholder="Vaše ime"
               required
             />
@@ -47,7 +52,7 @@ function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
               placeholder="vas@email.com"
               required
             />
@@ -58,21 +63,34 @@ function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
               placeholder="••••••••"
               required
             />
           </div>
+          <div>
+         <label className="block text-sm font-medium text-gray-700 mb-1">Potvrdi lozinku</label>
+          <div className="relative">
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-4 pr-10 py-2.5 focus:outline-none focus:ring-2 focus:ring-orange-400 text-sm"
+                placeholder="••••••••"
+                required
+              />
+              </div>
+          </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+            className="w-full bg-orange-500 text-white py-2.5 rounded-xl hover:bg-orange-600 transition font-semibold"
           >
             Registriraj se
           </button>
         </form>
-        <p className="text-center text-sm text-gray-600 mt-4">
+        <p className="text-center text-sm text-gray-500 mt-6">
           Već imaš račun?{' '}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-orange-500 hover:underline font-medium">
             Prijavi se
           </Link>
         </p>

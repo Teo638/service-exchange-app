@@ -168,22 +168,20 @@ function ServiceDetailsPage() {
                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white">
                   {service.provider_name?.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-900">{service.provider_name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm text-gray-500">{service.provider_email}</span>
-                  </div>
+                <p className="font-semibold text-slate-900">{service.provider_name}</p>
+                </div>
+                  <button
+                      onClick={() => navigate(`/profile/${service.user_id}`)}
+                      className="w-full border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
+                      >
+                      Pogledaj profil
+                  </button>
                 </div>
               </div>
             </div>
 
           </div>
         </div>
-      </div>
-    </div>
   )
 }
 

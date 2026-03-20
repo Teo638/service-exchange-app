@@ -4,6 +4,7 @@ import RegisterPage from './pages/RegisterPage'
 import HomePage from './pages/HomePage'
 import ServiceDetailsPage from './pages/ServiceDetailsPage'
 import DashboardPage from './pages/DashboardPage'
+import ProfilePage from './pages/ProfilePage'
 import Navbar from './components/Navbar'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
          <Route path="/register" element={<RegisterPage />} />
           <Route path="/services/:id" element={<ServiceDetailsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/profile/:id" element={<ProfilePage />} />
       </Routes>
     </BrowserRouter>
   )

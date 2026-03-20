@@ -7,7 +7,7 @@ function HomePage() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('Sve')
   const [loading, setLoading] = useState(true)
-  const [visibleCount, setVisibleCount] = useState(9)
+  const [visibleCount, setVisibleCount] = useState(6)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -65,7 +65,6 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* Hero Section */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-28 px-4 text-center">
         <h1 className="text-5xl font-extrabold mb-5 tracking-tight leading-tight">
           Pronađi uslugu koja ti treba
@@ -79,13 +78,16 @@ function HomePage() {
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
-              setVisibleCount(9)
+              setVisibleCount(6)
             }}
             placeholder="Što tražiš? (npr. prijevod, web dizajn, instrukcije...)"
             className="flex-1 px-6 py-5 text-gray-800 focus:outline-none text-base"
           />
           <button
-            onClick={() => setVisibleCount(9)}
+            onClick={() => {
+              setVisibleCount(6)
+              document.getElementById('usluge').scrollIntoView({ behavior: 'smooth' })
+            }}
             className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-5 font-bold transition text-base"
           >
             Pretraži
@@ -93,7 +95,6 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Kategorije */}
       <div className="bg-white py-10 border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4">
           <h3 className="text-center text-gray-400 font-medium mb-6 text-xs uppercase tracking-widest">
@@ -123,8 +124,7 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Usluge */}
-      <div className="bg-gray-100 py-10">
+      <div className="bg-gray-100 py-10" id="usluge">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-slate-800">
@@ -186,7 +186,7 @@ function HomePage() {
               {hasMore && (
                 <div className="text-center mt-10">
                   <button
-                    onClick={() => setVisibleCount(prev => prev + 9)}
+                    onClick={() => setVisibleCount(prev => prev + 6)}
                     className="bg-white border-2 border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white px-10 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm"
                   >
                     Prikaži više usluga
@@ -198,10 +198,9 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="bg-slate-900 py-10 text-center">
         <p className="text-orange-400 font-bold text-lg mb-1">🤝 Service Exchange</p>
-        <p className="text-slate-400 text-sm">© 2026 Sva prava pridržana.</p>
+        <p className="text-slate-400 text-sm">© 2026. Sva prava pridržana.</p>
       </footer>
 
     </div>

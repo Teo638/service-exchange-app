@@ -77,7 +77,6 @@ function ServiceDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-100">
 
-      {/* Breadcrumb */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
           <button onClick={() => navigate('/')} className="text-gray-400 hover:text-orange-500 text-sm transition">
@@ -89,10 +88,8 @@ function ServiceDetailsPage() {
       <div className="max-w-5xl mx-auto px-4 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          {/* Lijeva strana - detalji usluge */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Glavna kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {service.category && (
                 <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full font-semibold">
@@ -118,10 +115,8 @@ function ServiceDetailsPage() {
 
           </div>
 
-          {/* Desna strana - cijena + akcija */}
           <div className="space-y-4">
 
-            {/* Cijena kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <div className="text-center mb-6">
                 <p className="text-gray-400 text-sm mb-1">Cijena usluge</p>
@@ -159,7 +154,6 @@ function ServiceDetailsPage() {
               )}
             </div>
 
-            {/* Prodavač kartica */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
                 Ponuđač usluge
@@ -168,22 +162,20 @@ function ServiceDetailsPage() {
                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white">
                   {service.provider_name?.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <p className="font-semibold text-slate-900">{service.provider_name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm text-gray-500">{service.provider_email}</span>
-                  </div>
+                <p className="font-semibold text-slate-900">{service.provider_name}</p>
+                </div>
+                  <button
+                      onClick={() => navigate(`/profile/${service.user_id}`)}
+                      className="w-full border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
+                      >
+                      Pogledaj profil
+                  </button>
                 </div>
               </div>
             </div>
 
           </div>
         </div>
-      </div>
-    </div>
   )
 }
 

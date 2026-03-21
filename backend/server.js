@@ -4,6 +4,7 @@ const http = require('http');
 const { Server } = require('socket.io'); 
 require('dotenv').config();
 const pool = require('./src/config/db'); 
+const path = require('path');
 
 const authRoutes = require('./src/routes/authRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
@@ -23,6 +24,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json()); 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
     res.send('Server radi, baza je povezana.');

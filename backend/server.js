@@ -10,6 +10,8 @@ const authRoutes = require('./src/routes/authRoutes');
 const serviceRoutes = require('./src/routes/serviceRoutes');
 const requestRoutes = require('./src/routes/requestRoutes');
 const messageRoutes = require('./src/routes/messageRoutes'); 
+const questionRoutes = require('./src/routes/questionRoutes');
+const reviewRoutes = require('./src/routes/reviewRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -34,6 +36,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/messages', messageRoutes); 
+app.use('/api/questions', questionRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 
 let onlineUsers = [];

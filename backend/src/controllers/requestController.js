@@ -2,7 +2,7 @@ const pool = require('../config/db');
 
 
 const sendRequest = async (req, res) => {
-    const { service_id } = req.body;
+    const { service_id, preferred_time, message } = req.body;
     const buyer_id = req.user.id;
 
     try {
@@ -16,8 +16,8 @@ const sendRequest = async (req, res) => {
         }
 
         const newRequest = await pool.query(
-            'INSERT INTO requests (service_id, buyer_id, status) VALUES ($1, $2, $3) RETURNING *',
-            [service_id, buyer_id, 'pending']
+            'INSERT INTO requests (service_id, buyer_id, status, preferred_time, message) VALUES ($1, $2, $3) RETURNING *',
+            [service_id, buyer_id, 'pending', preferred_time, message]
         );
 
         res.status(201).json(newRequest.rows[0]);

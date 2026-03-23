@@ -97,7 +97,7 @@ function HomePage() {
 
       <div className="bg-white py-10 border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4">
-          <h3 className="text-center text-gray-400 font-medium mb-6 text-xs uppercase tracking-widest">
+          <h3 className="text-center text-gray-600 font-medium mb-6 text-xs uppercase tracking-widest">
             Popularne kategorije
           </h3>
           <div className="grid grid-cols-4 gap-4">
@@ -155,6 +155,19 @@ function HomePage() {
                     onClick={() => navigate(`/services/${service.id}`)}
                     className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group"
                   >
+                    {service.image_url ? (
+                     <img
+                      src={`http://localhost:5000${service.image_url}`}
+                      alt={service.title}
+                      className="w-full h-48 object-cover"
+                      />
+                     ) : (
+                     <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-5xl">
+                      {categoryIcons[service.category] || '🛠️'}
+                     </div>
+                    )}
+
+                    <div className="p-6">
                     {service.category && (
                       <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full font-semibold">
                         {categoryIcons[service.category] || '🛠️'} {service.category}
@@ -166,18 +179,34 @@ function HomePage() {
                     <p className="text-gray-500 text-sm mb-5 line-clamp-2 leading-relaxed">
                       {service.description}
                     </p>
-                    <div className="border-t border-gray-100 pt-4 flex items-center justify-between">
+                    <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-center justify-between mb-2">
                       <span className="text-slate-800 font-extrabold text-base">
                         {service.price} KM
                       </span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
-                          {service.provider_name?.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-gray-600 text-sm font-medium">
-                          {service.provider_name}
-                        </span>
-                      </div>
+                      {service.service_type && (
+      <span style={service.service_type === 'offering' 
+        ? {backgroundColor: '#f0fdf4', color: '#16a34a'} 
+        : {backgroundColor: '#eff6ff', color: '#3b82f6'}}
+        className="text-xs px-2 py-1 rounded-full font-semibold">
+        {service.service_type === 'offering' ? 'Nudi uslugu' : 'Traži uslugu'}
+      </span>
+    )}
+  </div>
+  <div className="flex items-center justify-between">
+  {service.location && (
+    <span className="text-gray-700 text-xs">📍 {service.location}</span>
+  )}
+  <div className="flex items-center gap-2">
+    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
+      {service.provider_name?.charAt(0).toUpperCase()}
+    </div>
+    <span className="text-gray-600 text-sm font-medium">
+      {service.provider_name}
+    </span>
+  </div>
+</div>
+</div>
                     </div>
                   </div>
                 ))}

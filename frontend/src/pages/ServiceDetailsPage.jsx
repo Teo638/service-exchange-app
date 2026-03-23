@@ -89,6 +89,13 @@ function ServiceDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           <div className="lg:col-span-2 space-y-6">
+            {service.image_url && (
+          <img
+             src={`http://localhost:5000${service.image_url}`}
+             alt={service.title}
+             className="w-full h-64 object-cover rounded-2xl shadow-sm"
+             />
+          )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {service.category && (
@@ -100,8 +107,21 @@ function ServiceDetailsPage() {
                 {service.title}
               </h1>
               <p className="text-gray-400 text-sm mb-3">
-                Objavljeno: {new Date(service.created_at).toLocaleDateString('hr-HR')}
+                Datum objave: {new Date(service.created_at).toLocaleDateString('hr-HR')}
               </p>
+              <div className="flex gap-3 mb-3">
+  {service.location && (
+    <span className="text-sm text-gray-700">📍 {service.location}</span>
+  )}
+  {service.service_type && (
+    <span style={service.service_type === 'offering'
+      ? {backgroundColor: '#f0fdf4', color: '#16a34a'}
+      : {backgroundColor: '#eff6ff', color: '#3b82f6'}}
+      className="text-xs px-2 py-1 rounded-full font-semibold">
+      {service.service_type === 'offering' ? 'Nudi uslugu' : 'Traži uslugu'}
+    </span>
+  )}
+</div>
 
               <div className="border-t border-gray-100 pt-6 mt-4">
                 <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">

@@ -22,9 +22,10 @@ function ProfilePage() {
         const userServices = servicesRes.data.filter(s => s.user_id === parseInt(id))
         setServices(userServices)
         if (userServices.length > 0) {
+          const detailRes = await api.get(`/services/${userServices[0].id}`)
           setProfile({
             name: userServices[0].provider_name,
-            email: userServices[0].provider_email,
+            email:detailRes.data.provider_email,
           })
         }
       } catch (err) {

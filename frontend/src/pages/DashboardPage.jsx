@@ -19,7 +19,7 @@ function DashboardPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold text-slate-900">Kontrolna ploča</h1>
-          <p className="text-gray-400 text-sm mt-1">Dobrodošli, {user?.name}!</p>
+          <p className="text-gray-500 text-sm mt-1">Dobrodošli, {user?.name}!</p>
         </div>
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex gap-1">

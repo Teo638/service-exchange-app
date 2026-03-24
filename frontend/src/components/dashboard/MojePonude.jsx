@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api'
+import { useNavigate } from 'react-router-dom'
 
 function MojePonude() {
+  const navigate=useNavigate()
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -233,6 +235,9 @@ function MojePonude() {
                 </button>
                 <button onClick={() => handleDelete(service.id)} className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-50 transition">
                   Obriši
+                </button>
+                <button onClick={() => navigate(`/services/${service.id}`)} className="px-4 py-2 border border-orange-500 text-orange-500 rounded-xl text-sm font-semibold hover:bg-orange-50 transition">
+                  Pogledaj oglas
                 </button>
               </div>
             </div>

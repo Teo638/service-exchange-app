@@ -91,6 +91,15 @@ const handleReviewSubmit = async (e) => {
                 <p className="text-sm text-gray-500 mt-1">
                   Upit poslan: {new Date(req.created_at).toLocaleDateString('hr-HR')}
                 </p>
+                <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
+  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
+  <p className="text-sm text-slate-600 italic">"{req.message}"</p>
+  {req.preferred_time && (
+    <p className="text-xs text-orange-400 mt-2 font-semibold">
+      📅 Termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
+    </p>
+  )}
+</div>
                  {req.status === 'completed' && (
                   <button
                     onClick={() => setSelectedRequestId(req.id)}

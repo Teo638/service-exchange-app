@@ -70,6 +70,15 @@ function PrimljeniZahtjevi() {
                   <p className="text-sm text-slate-500 mt-1">
                     Od korisnika: <span className="font-semibold text-slate-700">{req.buyer_name}</span>
                   </p>
+                  <div className="mt-3 p-3 bg-orange-50/50 rounded-xl border border-orange-100 text-left">
+  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji zahtjeva:</p>
+  <p className="text-sm text-slate-700 italic">"{req.message}"</p>
+  {req.preferred_time && (
+    <p className="text-xs text-orange-400 mt-2 font-bold">
+      ⏰ Predloženi termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
+    </p>
+  )}
+</div>
                 </div>
                 {statusBadge(req.status)}
               </div>

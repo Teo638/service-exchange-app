@@ -16,6 +16,7 @@ function ServiceDetailsPage() {
 
   const [service, setService] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [reviews, setReviews] = useState([])
   const [requestSent, setRequestSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
@@ -25,6 +26,8 @@ function ServiceDetailsPage() {
       try {
         const res = await api.get(`/services/${id}`)
         setService(res.data)
+        const reviewsRes = await api.get(`/reviews/user/${res.data.user_id}`)
+        setReviews(reviewsRes.data)
       } catch (err) {
         console.error(err)
       } finally {
@@ -133,6 +136,29 @@ function ServiceDetailsPage() {
               </div>
             </div>
 
+
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-xl font-bold text-slate-800 mb-6">Recenzije korisnika ({reviews.length})</h2>
+              {reviews.length === 0 ? (
+                <p className="text-gray-400 italic">Još nema recenzija za ovog korisnika.</p>
+              ) : (
+                <div className="space-y-6">
+                  {reviews.map((rev) => (
+                    <div key={rev.id} className="border-b border-gray-50 pb-6 last:border-0">
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="font-bold text-slate-800">{rev.reviewer_name}</p>
+                        <div className="flex text-yellow-400">
+                          {[...Array(5)].map((_, i) => (
+                            <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">

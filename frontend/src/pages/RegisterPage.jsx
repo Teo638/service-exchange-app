@@ -16,8 +16,8 @@ function RegisterPage() {
     e.preventDefault()
     setError('')
     if (password !== confirmPassword) {
-     setError('Lozinke se ne podudaraju.')
-     return
+      setError('Lozinke se ne podudaraju.')
+      return
     }
     try {
       await api.post('/auth/register', { name, email, password })
@@ -69,8 +69,8 @@ function RegisterPage() {
             />
           </div>
           <div>
-         <label className="block text-sm font-medium text-gray-700 mb-1">Potvrdi lozinku</label>
-          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Potvrdi lozinku</label>
+            <div className="relative">
               <input
                 type="password"
                 value={confirmPassword}
@@ -79,7 +79,7 @@ function RegisterPage() {
                 placeholder="••••••••"
                 required
               />
-              </div>
+            </div>
           </div>
           <button
             type="submit"

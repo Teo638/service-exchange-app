@@ -68,17 +68,17 @@ function PrimljeniZahtjevi() {
                 <div>
                   <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
                   <p className="text-sm text-slate-500 mt-1">
-                    Od korisnika: <span className="font-semibold text-slate-700">{req.buyer_name}</span>
+                    Od korisnika: <span className="font-semibold text-slate-900">{req.buyer_name}</span>
                   </p>
                   <div className="mt-3 p-3 bg-orange-50/50 rounded-xl border border-orange-100 text-left">
-  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji zahtjeva:</p>
-  <p className="text-sm text-slate-700 italic">"{req.message}"</p>
-  {req.preferred_time && (
-    <p className="text-xs text-orange-400 mt-2 font-bold">
-      ⏰ Predloženi termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
-    </p>
-  )}
-</div>
+                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji zahtjeva:</p>
+                    <p className="text-sm text-slate-700 italic">"{req.message}"</p>
+                    {req.preferred_time && (
+                      <p className="text-xs text-orange-400 mt-2 font-bold">
+                        ⏰ Predloženi termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 {statusBadge(req.status)}
               </div>
@@ -86,7 +86,7 @@ function PrimljeniZahtjevi() {
                 <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
                   <button
                     onClick={() => handleStatus(req.id, 'accepted')}
-                    style={{border: '1px solid #86efac', color: '#22c55e'}}
+                    style={{ border: '1px solid #86efac', color: '#22c55e' }}
                     onMouseEnter={e => e.target.style.backgroundColor = '#f0fdf4'}
                     onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
                     className="px-4 py-1.5 rounded-lg text-sm font-semibold transition"

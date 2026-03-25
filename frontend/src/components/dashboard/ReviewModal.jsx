@@ -10,14 +10,13 @@ function ReviewModal({ requestId, onClose, onSuccess }) {
     e.preventDefault()
     setLoading(true)
     try {
-      // Ruta koju je kolega naveo: POST /api/reviews
       await api.post('/reviews', {
         request_id: requestId,
         rating,
         comment
       })
       alert('Recenzija uspješno poslana!')
-      onSuccess() // Ovo će zatvoriti modal i osvježiti listu
+      onSuccess()
     } catch (err) {
       console.error(err)
       alert(err.response?.data?.message || 'Greška pri slanju recenzije')
@@ -31,7 +30,7 @@ function ReviewModal({ requestId, onClose, onSuccess }) {
       <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
         <h3 className="text-2xl font-bold text-slate-800 mb-2">Ocjenite uslugu</h3>
         <p className="text-slate-500 mb-6 text-sm">Vaša recenzija će biti javno vidljiva na oglasu.</p>
-        
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Ocjena</label>

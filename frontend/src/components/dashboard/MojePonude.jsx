@@ -4,13 +4,15 @@ import api from '../../api'
 import { useNavigate } from 'react-router-dom'
 
 function MojePonude() {
-  const navigate=useNavigate()
+  const navigate = useNavigate()
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingService, setEditingService] = useState(null)
-  const [form, setForm] = useState({ title: '', description: '', price: '', category: '',
-    location: '', service_type: 'offering' })
+  const [form, setForm] = useState({
+    title: '', description: '', price: '', category: '',
+    location: '', service_type: 'offering'
+  })
   const [image, setImage] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [error, setError] = useState('')
@@ -76,9 +78,11 @@ function MojePonude() {
 
   const handleEdit = (service) => {
     setEditingService(service)
-    setForm({ title: service.title, description: service.description, price: service.price, category: service.category, location: service.location || '',
-      service_type: service.service_type || 'offering' })
-      setImagePreview(service.image_url ? `http://localhost:5000${service.image_url}` : null)
+    setForm({
+      title: service.title, description: service.description, price: service.price, category: service.category, location: service.location || '',
+      service_type: service.service_type || 'offering'
+    })
+    setImagePreview(service.image_url ? `http://localhost:5000${service.image_url}` : null)
     setShowForm(true)
   }
 
@@ -99,10 +103,11 @@ function MojePonude() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-bold text-slate-800">Moje ponude ({services.length})</h2>
         <button
-          onClick={() => { setShowForm(true); setEditingService(null); setForm({ title: '', description: '', price: '', category: '', location: '', service_type: 'offering' })
-        setImage(null)
-        setImagePreview(null)
-        }}
+          onClick={() => {
+            setShowForm(true); setEditingService(null); setForm({ title: '', description: '', price: '', category: '', location: '', service_type: 'offering' })
+            setImage(null)
+            setImagePreview(null)
+          }}
           className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2 rounded-xl text-sm font-semibold transition"
         >
           + Dodaj novu
@@ -224,11 +229,11 @@ function MojePonude() {
                     📋
                   </div>
                 )}
-              <div>
-                <p className="font-semibold text-slate-800">{service.title}</p>
-                <p className="text-sm text-gray-400 mt-0.5">{service.category} · {service.price} KM   {service.location && ` · ${service.location}`}</p>
+                <div>
+                  <p className="font-semibold text-slate-800">{service.title}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{service.category} · {service.price} KM   {service.location && ` · ${service.location}`}</p>
+                </div>
               </div>
-              </div>  
               <div className="flex gap-2">
                 <button onClick={() => handleEdit(service)} className="border border-gray-200 text-gray-600 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition">
                   Uredi

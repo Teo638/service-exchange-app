@@ -7,7 +7,7 @@ function HomePage() {
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('Sve')
   const [loading, setLoading] = useState(true)
-  const [visibleCount, setVisibleCount] = useState(6)
+  const [visibleCount, setVisibleCount] = useState(8)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -63,10 +63,9 @@ function HomePage() {
   const hasMore = visibleCount < filtered.length
 
   return (
-    <div className="min-h-screen bg-gray-100">
-
+    <div className="min-h-screen bg-gray-50/50">
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-28 px-4 text-center">
-        <h1 className="text-5xl font-extrabold mb-5 tracking-tight leading-tight">
+        <h1 className="text-4xl font-extrabold mb-4 tracking-tight leading-tight">
           Pronađi uslugu koja ti treba
         </h1>
         <p className="text-slate-300 mb-10 text-xl max-w-xl mx-auto">
@@ -108,11 +107,10 @@ function HomePage() {
                   setActiveCategory(cat)
                   setVisibleCount(9)
                 }}
-                className={`flex flex-col items-center justify-center py-6 px-4 rounded-2xl font-semibold transition-all duration-200 ${
-                  activeCategory === cat
-                    ? 'bg-orange-500 text-white shadow-lg scale-105'
-                    : 'bg-gray-50 text-gray-700 hover:bg-orange-50 hover:text-orange-500 hover:-translate-y-1 border border-gray-200'
-                }`}
+                className={`flex flex-col items-center justify-center py-6 px-4 rounded-2xl font-semibold transition-all duration-200 ${activeCategory === cat
+                  ? 'bg-orange-500 text-white shadow-lg scale-105'
+                  : 'bg-gray-50 text-gray-700 hover:bg-orange-50 hover:text-orange-500 hover:-translate-y-1 border border-gray-200'
+                  }`}
               >
                 <span className="text-4xl mb-3">
                   {categoryIcons[cat] || '🛠️'}
@@ -126,20 +124,17 @@ function HomePage() {
 
       <div className="bg-gray-100 py-10" id="usluge">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-800">
               {search ? `Rezultati za "${search}"` : 'Najnovije usluge'}
             </h2>
-            <span className="text-gray-400 text-sm bg-white px-3 py-1 rounded-full shadow-sm">
+            <span className="text-gray-500 text-sm bg-white px-3 py-1 rounded-full shadow-sm">
               {filtered.length} usluga
             </span>
           </div>
 
           {loading ? (
-            <div className="text-center py-20">
-              <div className="text-5xl mb-4">⏳</div>
-              <p className="text-gray-500 text-lg">Učitavanje usluga...</p>
-            </div>
+            <div className="text-center py-20 text-gray-400 font-medium">Učitavanje...</div>
           ) : filtered.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-5xl mb-4">🔍</div>
@@ -148,75 +143,79 @@ function HomePage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4 gap-5">
                 {visible.map(service => (
                   <div
                     key={service.id}
                     onClick={() => navigate(`/services/${service.id}`)}
-                    className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group"
+                    className="bg-white rounded-2xl cursor-pointer hover:shadow-xl transition-all duration-300 group flex flex-col h-full border border-gray-100/50"
                   >
-                    {service.image_url ? (
-                     <img
-                      src={`http://localhost:5000${service.image_url}`}
-                      alt={service.title}
-                      className="w-full h-48 object-cover"
-                      />
-                     ) : (
-                     <div className="w-full h-48 bg-gray-100 flex items-center justify-center text-5xl">
-                      {categoryIcons[service.category] || '🛠️'}
-                     </div>
-                    )}
+                    <div className="p-2 pb-0">
+                      <div className="w-full h-28 bg-gray-50 overflow-hidden relative">
+                        {service.image_url ? (
+                          <img
+                            src={`http://localhost:5000${service.image_url}`}
+                            alt={service.title}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-4xl ">
+                            {categoryIcons[service.category] || '🛠️'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                    <div className="p-6">
-                    {service.category && (
-                      <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full font-semibold">
-                        {categoryIcons[service.category] || '🛠️'} {service.category}
-                      </span>
-                    )}
-                    <h3 className="text-xl font-semibold text-slate-900 mt-3 mb-2 group-hover:text-orange-500 transition-colors">
-                      {service.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm mb-5 line-clamp-2 leading-relaxed">
-                      {service.description}
-                    </p>
-                    <div className="border-t border-gray-100 pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-slate-800 font-extrabold text-base">
-                        {service.price} KM
-                      </span>
-                      {service.service_type && (
-      <span style={service.service_type === 'offering' 
-        ? {backgroundColor: '#f0fdf4', color: '#16a34a'} 
-        : {backgroundColor: '#eff6ff', color: '#3b82f6'}}
-        className="text-xs px-2 py-1 rounded-full font-semibold">
-        {service.service_type === 'offering' ? 'Nudi uslugu' : 'Traži uslugu'}
-      </span>
-    )}
-  </div>
-  <div className="flex items-center justify-between">
-  {service.location && (
-    <span className="text-gray-700 text-xs">📍 {service.location}</span>
-  )}
-  <div className="flex items-center gap-2">
-    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-xs font-bold text-white">
-      {service.provider_name?.charAt(0).toUpperCase()}
-    </div>
-    <span className="text-gray-600 text-sm font-medium">
-      {service.provider_name}
-    </span>
-  </div>
-</div>
-</div>
+                    <div className="p-3 flex flex-col flex-1">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        {service.category && (
+                          <span className="text-[8px]  bg-orange-50 text-orange-500 px-1.5 py-0.5 rounded font-bold uppercase">
+                            {service.category}
+                          </span>
+                        )}
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded font-bold uppercase ${service.service_type === 'offering' ? 'text-green-600 bg-green-50' : 'text-blue-600 bg-blue-50'
+                          }`}>
+                          {service.service_type === 'offering' ? 'Nudi' : 'Traži'}
+                        </span>
+                      </div>
+
+                      <h3 className="text-sm font-bold text-slate-800 group-hover:text-orange-500 transition-colors line-clamp-1 mb-1">
+                        {service.title}
+                      </h3>
+
+                      <p className="text-gray-500 text-[11px] mb-4 line-clamp-1">
+                        {service.description}
+                      </p>
+
+                      <div className="mt-auto pt-1 border-t border-gray-50 flex items-center justify-between">
+                        <div>
+                          <p className="text-orange-500 font-black text-base">
+                            {service.price} <span className="text-[10px] text-gray-400">KM</span>
+                          </p>
+                          {service.location && (
+                            <p className="text-gray-500 text-[10px]">
+                              📍 {service.location}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[10px] font-bold text-slate-600">{service.provider_name}</p>
+                          <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+                            {service.provider_name?.charAt(0)}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
 
               {hasMore && (
-                <div className="text-center mt-10">
+                <div className="text-center mt-12">
                   <button
-                    onClick={() => setVisibleCount(prev => prev + 6)}
-                    className="bg-white border-2 border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white px-10 py-3 rounded-xl font-semibold transition-all duration-200 shadow-sm"
+                    onClick={() => setVisibleCount(prev => prev + 8)}
+                    className="bg-slate-800 text-white px-10 py-2 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg"
                   >
                     Prikaži više usluga
                   </button>
@@ -231,7 +230,6 @@ function HomePage() {
         <p className="text-orange-400 font-bold text-lg mb-1">🤝 Service Exchange</p>
         <p className="text-slate-400 text-sm">© 2026. Sva prava pridržana.</p>
       </footer>
-
     </div>
   )
 }

@@ -13,7 +13,7 @@ function ProfilePage() {
   const navigate = useNavigate()
   const [profile, setProfile] = useState(null)
   const [services, setServices] = useState([])
-  const [reviews, setReviews] = useState([]) 
+  const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function ProfilePage() {
           const detailRes = await api.get(`/services/${userServices[0].id}`)
           setProfile({
             name: userServices[0].provider_name,
-            email:detailRes.data.provider_email,
+            email: detailRes.data.provider_email,
           })
         }
       } catch (err) {
@@ -63,19 +63,18 @@ function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
-          <button onClick={() => navigate(-1)} className="text-gray-400 hover:text-orange-500 text-sm transition">
+          <button onClick={() => navigate(-1)} className="text-gray-500 hover:text-orange-500 text-sm transition">
             ← Natrag
           </button>
         </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
               <div className="w-20 h-20 bg-orange-500 rounded-full flex items-center justify-center text-3xl font-bold text-white mx-auto mb-4">
                 {profile.name?.charAt(0).toUpperCase()}
@@ -84,14 +83,14 @@ function ProfilePage() {
               <p className="text-gray-400 text-sm mt-1">Član platforme</p>
 
               <div className="flex items-center justify-center gap-1 mt-2">
-  <span className="text-yellow-400">★</span>
-  <span className="font-bold text-slate-700">
-    {reviews.length > 0 
-      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
-      : 0}
-  </span>
-  <span className="text-gray-400 text-sm">({reviews.length} recenzija)</span>
-</div>
+                <span className="text-yellow-400">★</span>
+                <span className="font-bold text-slate-700">
+                  {reviews.length > 0
+                    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                    : 0}
+                </span>
+                <span className="text-gray-400 text-sm">({reviews.length} recenzija)</span>
+              </div>
 
               <div className="border-t border-gray-100 mt-4 pt-4 text-left space-y-3">
                 <div className="flex items-center gap-2">
@@ -108,6 +107,40 @@ function ProfilePage() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              <h2 className="text-lg font-bold text-slate-800 mb-4">
+                Recenzije ({reviews.length})
+              </h2>
+
+              {reviews.length === 0 ? (
+                <div className="text-center py-4 text-gray-400 italic text-sm">
+                  Korisnik još nema ocjena.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reviews.map(rev => (
+                    <div key={rev.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
+                      <div className="flex justify-between items-start mb-1">
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
+                          <div className="flex text-yellow-400 text-[10px]">
+                            {[...Array(5)].map((_, i) => (
+                              <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="text-[9px] text-gray-400 font-bold">
+                          {new Date(rev.created_at).toLocaleDateString('hr-HR')}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-xs italic">"{rev.comment}"</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
 
 
@@ -147,43 +180,12 @@ function ProfilePage() {
             )}
           </div>
 
-          <div className="mt-10">
-  <h2 className="text-lg font-bold text-slate-800 mb-4">
-    Recenzije korisnika ({reviews.length})
-  </h2>
-  
-  {reviews.length === 0 ? (
-    <div className="bg-white rounded-2xl p-8 text-center border border-dashed border-gray-200 text-gray-400 italic">
-      Korisnik još nema ocjena.
-    </div>
-  ) : (
-    <div className="space-y-4">
-      {reviews.map(rev => (
-        <div key={rev.id} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-start mb-2">
-            <div>
-              <p className="font-bold text-slate-800">{rev.reviewer_name}</p>
-              <div className="flex text-yellow-400 text-sm">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
-                ))}
-              </div>
-            </div>
-            <span className="text-[10px] text-gray-400 uppercase font-bold">
-              {new Date(rev.created_at).toLocaleDateString('hr-HR')}
-            </span>
-          </div>
-          <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
-        </div>
-      ))}
-    </div>
-  )}
-</div>
-
         </div>
       </div>
     </div>
   )
 }
+
+
 
 export default ProfilePage

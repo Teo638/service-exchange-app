@@ -23,10 +23,10 @@ function ServiceDetailsPage() {
   const [requestSent, setRequestSent] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
-  const [message, setMessage] =  useState('')
+  const [message, setMessage] = useState('')
   const [preferredTime, setPreferredTime] = useState('')
 
- useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await api.get(`/services/${id}`)
@@ -50,16 +50,16 @@ function ServiceDetailsPage() {
       return
     }
     if (!message || !preferredTime) {
-    setError('Molimo popunite poruku i odaberite datum/vrijeme.')
-    return
+      setError('Molimo popunite poruku i odaberite datum/vrijeme.')
+      return
     }
     setSending(true)
     setError('')
     try {
-      await api.post('/requests', { 
-        service_id:id,
+      await api.post('/requests', {
+        service_id: id,
         message: message,
-        preferred_time:  new Date(preferredTime).toISOString()
+        preferred_time: new Date(preferredTime).toISOString()
       })
       setRequestSent(true)
     } catch (err) {
@@ -71,30 +71,30 @@ function ServiceDetailsPage() {
   }
 
   const handlePostQuestion = async (e) => {
-  e.preventDefault()
-  if (!newQuestion.trim()) return
-  try {
-    await api.post('/questions', { service_id: id, question: newQuestion })
-    setNewQuestion('')
-    const res = await api.get(`/questions/${id}`) 
-    setQuestions(res.data)
-  } catch (err) {
-    console.error(err)
+    e.preventDefault()
+    if (!newQuestion.trim()) return
+    try {
+      await api.post('/questions', { service_id: id, question: newQuestion })
+      setNewQuestion('')
+      const res = await api.get(`/questions/${id}`)
+      setQuestions(res.data)
+    } catch (err) {
+      console.error(err)
+    }
   }
-}
 
-const handlePostAnswer = async (questionId) => {
-  const answer = answerTexts[questionId]
-  if (!answer?.trim()) return
-  try {
-    await api.put(`/questions/${questionId}/answer`, { answer })
-    setAnswerTexts({ ...answerTexts, [questionId]: '' })
-    const res = await api.get(`/questions/${id}`) 
-    setQuestions(res.data)
-  } catch (err) {
-    console.error(err)
+  const handlePostAnswer = async (questionId) => {
+    const answer = answerTexts[questionId]
+    if (!answer?.trim()) return
+    try {
+      await api.put(`/questions/${questionId}/answer`, { answer })
+      setAnswerTexts({ ...answerTexts, [questionId]: '' })
+      const res = await api.get(`/questions/${id}`)
+      setQuestions(res.data)
+    } catch (err) {
+      console.error(err)
+    }
   }
-}
 
 
   if (loading) return (
@@ -125,23 +125,23 @@ const handlePostAnswer = async (questionId) => {
 
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-3">
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-orange-500 text-sm transition">
+          <button onClick={() => navigate('/')} className="text-gray-500 hover:text-orange-500 text-sm transition">
             ← Natrag na pretragu
           </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 ">
+      <div className="max-w-5xl mx-auto px-4 py-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           <div className="lg:col-span-2 space-y-6">
             {service.image_url && (
-          <img
-             src={`http://localhost:5000${service.image_url}`}
-             alt={service.title}
-             className="w-full h-64 object-cover rounded-2xl shadow-sm"
-             />
-          )}
+              <img
+                src={`http://localhost:5000${service.image_url}`}
+                alt={service.title}
+                className="w-full h-80 object-cover rounded-2xl shadow-sm border border-gray-100"
+              />
+            )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
               {service.category && (
@@ -149,28 +149,23 @@ const handlePostAnswer = async (questionId) => {
                   {categoryIcons[service.category] || '🛠️'} {service.category}
                 </span>
               )}
-              <h1 className="text-3xl font-bold text-slate-900 mt-4 mb-3">
+              <h1 className="text-3xl font-bold text-slate-900 mt-4 mb-3  leading-tight">
                 {service.title}
               </h1>
-              <p className="text-gray-400 text-sm mb-3">
-                Datum objave: {new Date(service.created_at).toLocaleDateString('hr-HR')}
-              </p>
-              <div className="flex gap-3 mb-3">
-  {service.location && (
-    <span className="text-sm text-gray-700">📍 {service.location}</span>
-  )}
-  {service.service_type && (
-    <span style={service.service_type === 'offering'
-      ? {backgroundColor: '#f0fdf4', color: '#16a34a'}
-      : {backgroundColor: '#eff6ff', color: '#3b82f6'}}
-      className="text-xs px-2 py-1 rounded-full font-semibold">
-      {service.service_type === 'offering' ? 'Nudi uslugu' : 'Traži uslugu'}
-    </span>
-  )}
-</div>
+              <div className="flex items-center gap-4 text-gray-400 text-sm mb-3 pb-3 border-b border-gray-50">
+                <span>📍 {service.location || 'Lokacija nije navedena'}</span>
+                <span>📅 {new Date(service.created_at).toLocaleDateString('hr-HR')}</span>
+                {service.service_type && (
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${service.service_type === 'offering' ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-blue-600'
+                    }`}>
+                    {service.service_type === 'offering' ? 'Nudi' : 'Traži'}
+                  </span>
+                )}
+              </div>
 
-              <div className="border-t border-gray-100 pt-6 mt-4">
-                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+
+              <div className="border-t border-gray-100 pt-3 mt-4">
+                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
                   Opis usluge
                 </h2>
                 <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line">
@@ -179,81 +174,89 @@ const handlePostAnswer = async (questionId) => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-6">
-  <h2 className="text-xl font-bold text-slate-800 mb-6">Pitanja i odgovori</h2>
-  
-  {!isOwner && user && (
-    <form onSubmit={handlePostQuestion} className="mb-8">
-      <textarea
-        className="w-full border border-gray-200 rounded-xl p-4 focus:ring-2 focus:ring-orange-500 outline-none text-sm bg-gray-50 resize-none"
-        placeholder="Pitajte prodavača nešto o ovoj usluzi..."
-        value={newQuestion}
-        onChange={(e) => setNewQuestion(e.target.value)}
-        rows="3"
-      />
-      <button type="submit" className="mt-2 bg-slate-800 text-white px-6 py-2 rounded-xl font-semibold text-sm hover:bg-slate-700 transition">
-        Postavi pitanje
-      </button>
-    </form>
-  )}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                Pitanja i odgovori
+                <span className="text-sm font-normal text-gray-400">({questions.length})</span>
+              </h2>
 
-  <div className="space-y-6">
-    {questions.length === 0 ? (
-      <p className="text-gray-400 italic">Još nema pitanja za ovu uslugu.</p>
-    ) : (
-      questions.map((q) => (
-        <div key={q.id} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
-          <div className="flex gap-3">
-            <span className="font-black text-orange-500 text-lg">P:</span>
-            <div className="flex-1">
-              <p className="text-slate-800 font-medium">{q.question}</p>
-              <p className="text-[10px] text-gray-400 uppercase mt-1">
-                {new Date(q.created_at).toLocaleDateString('hr-HR')}
-              </p>
-            </div>
-          </div>
+              {!isOwner && user && (
+                <form onSubmit={handlePostQuestion} className="mb-8">
+                  <textarea
+                    className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none text-sm bg-gray-50 resize-none transition-all"
+                    placeholder="Pitajte prodavača nešto o ovoj usluzi..."
+                    value={newQuestion}
+                    onChange={(e) => setNewQuestion(e.target.value)}
+                    rows="3"
+                  />
+                  <button type="submit" className="mt-2 bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-700 transition shadow-sw">
+                    Postavi pitanje
+                  </button>
+                </form>
+              )}
 
-          {q.answer ? (
-            <div className="mt-4 ml-6 pl-4 border-l-2 border-orange-200 flex gap-3">
-              <span className="font-black text-green-600">O:</span>
-              <p className="text-slate-600 text-sm italic">{q.answer}</p>
-            </div>
-          ) : (
-            isOwner && (
-              <div className="mt-4 ml-8">
-                <input
-                  type="text"
-                  className="w-full border-b border-gray-300 bg-transparent py-2 focus:border-orange-500 outline-none text-sm"
-                  placeholder="Napišite odgovor..."
-                  value={answerTexts[q.id] || ''}
-                  onChange={(e) => setAnswerTexts({ ...answerTexts, [q.id]: e.target.value })}
-                />
-                <button onClick={() => handlePostAnswer(q.id)} className="mt-2 text-orange-600 font-bold text-xs hover:text-orange-800 transition">
-                  POŠALJI ODGOVOR
-                </button>
+              <div className="space-y-4">
+                {questions.length === 0 ? (
+                  <p className="text-center py-3 bg-gray-50 rounded-2xl text-gray-400 italic text-sm">Još nema pitanja za ovu uslugu.</p>
+                ) : (
+                  questions.map((q) => (
+                    <div key={q.id} className="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                      <div className="flex gap-3">
+                        <span className="font-black text-orange-500 text-lg">P:</span>
+                        <div className="flex-1">
+                          <p className="text-slate-800 font-medium">{q.question}</p>
+                          <p className="text-[10px] text-gray-400 uppercase mt-1">
+                            {new Date(q.created_at).toLocaleDateString('hr-HR')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {q.answer ? (
+                        <div className="mt-4 ml-6 pl-4 border-l-2 border-orange-200 flex gap-3">
+                          <span className="font-black text-green-600">O:</span>
+                          <p className="text-slate-600 text-sm italic">{q.answer}</p>
+                        </div>
+                      ) : (
+                        isOwner && (
+                          <div className="mt-4 ml-8">
+                            <input
+                              type="text"
+                              className="w-full border-b border-gray-300 bg-transparent py-2 focus:border-orange-500 outline-none text-sm"
+                              placeholder="Napišite odgovor..."
+                              value={answerTexts[q.id] || ''}
+                              onChange={(e) => setAnswerTexts({ ...answerTexts, [q.id]: e.target.value })}
+                            />
+                            <button onClick={() => handlePostAnswer(q.id)} className="mt-2 text-orange-600 font-bold text-xs hover:text-orange-800 transition">
+                              POŠALJI ODGOVOR
+                            </button>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
-            )
-          )}
-        </div>
-      ))
-    )}
-  </div>
-</div>
+            </div>
 
-<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-bold text-slate-800 mb-6">Recenzije korisnika ({reviews.length})</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <h2 className="text-xl font-bold text-slate-800 mb-6 uppercase tracking-tight">Recenzije korisnika ({reviews.length})</h2>
               {reviews.length === 0 ? (
                 <p className="text-gray-400 italic">Još nema recenzija za ovog korisnika.</p>
               ) : (
                 <div className="space-y-6">
                   {reviews.map((rev) => (
-                    <div key={rev.id} className="border-b border-gray-50 pb-6 last:border-0">
-                      <div className="flex justify-between items-center mb-2">
-                        <p className="font-bold text-slate-800">{rev.reviewer_name}</p>
-                        <div className="flex text-yellow-400">
-                          {[...Array(5)].map((_, i) => (
-                            <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
-                          ))}
+                    <div key={rev.id} className="group">
+                      <div className="flex items-center mb-2 gap-3">
+                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-orange-500 font-bold text-sm">
+                          {rev.reviewer_name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
+                          <div className="flex text-yellow-400 text-xs">
+                            {[...Array(5)].map((_, i) => (
+                              <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
+                            ))}
+                          </div>
                         </div>
                       </div>
                       <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
@@ -284,11 +287,11 @@ const handlePostAnswer = async (questionId) => {
                 </div>
               ) : (
                 <>
-                <div className="space-y-3 mb-4 text-left">
+                  <div className="space-y-3 mb-4 text-left">
                     <div>
                       <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Kada trebate uslugu?</label>
-                      <input 
-                        type="datetime-local" 
+                      <input
+                        type="datetime-local"
                         className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 transition-all"
                         value={preferredTime}
                         onChange={(e) => setPreferredTime(e.target.value)}
@@ -296,7 +299,7 @@ const handlePostAnswer = async (questionId) => {
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-400 uppercase mb-1 ml-1">Vaša poruka</label>
-                      <textarea 
+                      <textarea
                         className="w-full border border-gray-100 bg-gray-50 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 transition-all resize-none"
                         rows="3"
                         placeholder="Napišite detalje prodavaču..."
@@ -315,11 +318,19 @@ const handlePostAnswer = async (questionId) => {
                   >
                     {sending ? 'Slanje...' : 'Pošalji zahtjev'}
                   </button>
+                  {!isOwner && user && (
+                    <button
+                      onClick={() => navigate(`/chat/${service.user_id}`)}
+                      className="w-full mt-3 border-2 border-slate-800 text-slate-800 py-3 rounded-xl font-bold hover:bg-slate-800 hover:text-white transition-all flex items-center justify-center gap-2"
+                    >
+                      💬 Pošalji privatnu poruku
+                    </button>
+                  )}
                   {!user && (
-                  <p className="text-center text-gray-400 text-sm mt-2">
-                       Trebate račun za slanje zahtjeva
-                 </p>
-                   )}
+                    <p className="text-center text-gray-400 text-sm mt-2">
+                      Trebate račun za slanje zahtjeva
+                    </p>
+                  )}
                 </>
               )}
             </div>
@@ -333,19 +344,19 @@ const handlePostAnswer = async (questionId) => {
                   {service.provider_name?.charAt(0).toUpperCase()}
                 </div>
                 <p className="font-semibold text-slate-900">{service.provider_name}</p>
-                </div>
-                  <button
-                      onClick={() => navigate(`/profile/${service.user_id}`)}
-                      className="w-full border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
-                      >
-                      Pogledaj profil
-                  </button>
-                </div>
               </div>
+              <button
+                onClick={() => navigate(`/profile/${service.user_id}`)}
+                className="w-full mt-5 border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
+              >
+                Pogledaj profil
+              </button>
             </div>
-
           </div>
         </div>
+
+      </div>
+    </div>
   )
 }
 

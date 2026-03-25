@@ -10,23 +10,23 @@ function MojiUpiti() {
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-    const fetchRequests = async () => {
-      try {
-        const res = await api.get('/requests/sent')
-        setRequests(res.data)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
-      }
+  const fetchRequests = async () => {
+    try {
+      const res = await api.get('/requests/sent')
+      setRequests(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
     }
+  }
 
-     useEffect(() => {
+  useEffect(() => {
     fetchRequests()
   }, [])
-   
 
-const handleReviewSubmit = async (e) => {
+
+  const handleReviewSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
     try {
@@ -36,10 +36,10 @@ const handleReviewSubmit = async (e) => {
         comment
       })
       alert('Hvala! Recenzija je uspješno poslana.')
-      setSelectedRequestId(null) 
-      setComment('') 
+      setSelectedRequestId(null)
+      setComment('')
       setRating(5)
-      fetchRequests() 
+      fetchRequests()
     } catch (err) {
       console.error(err)
       alert(err.response?.data?.message || 'Greška pri slanju recenzije.')
@@ -86,24 +86,24 @@ const handleReviewSubmit = async (e) => {
               <div>
                 <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Davatelj usluge: <span className="font-semibold text-slate-700">{req.seller_name}</span>
+                  Davatelj usluge: <span className="font-semibold text-slate-900">{req.seller_name}</span>
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   Upit poslan: {new Date(req.created_at).toLocaleDateString('hr-HR')}
                 </p>
                 <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
-  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
-  <p className="text-sm text-slate-600 italic">"{req.message}"</p>
-  {req.preferred_time && (
-    <p className="text-xs text-orange-400 mt-2 font-semibold">
-      📅 Termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
-    </p>
-  )}
-</div>
-                 {req.status === 'completed' && (
+                  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
+                  <p className="text-sm text-slate-600 italic">"{req.message}"</p>
+                  {req.preferred_time && (
+                    <p className="text-xs text-orange-400 mt-2 font-semibold">
+                      📅 Termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
+                    </p>
+                  )}
+                </div>
+                {req.status === 'completed' && (
                   <button
                     onClick={() => setSelectedRequestId(req.id)}
-                    className="mt-3 text-xs font-bold bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase tracking-wider"
+                    className="mt-3 text-xs font-bold bg-indigo-50 text-slate-900 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase tracking-wider"
                   >
                     ⭐ Ostavi recenziju
                   </button>
@@ -122,7 +122,7 @@ const handleReviewSubmit = async (e) => {
           <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
             <h3 className="text-2xl font-bold text-slate-800 mb-2">Ocjenite uslugu</h3>
             <p className="text-slate-500 mb-6 text-sm">Podijelite svoje iskustvo s ostalim korisnicima.</p>
-            
+
             <form onSubmit={handleReviewSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Vaša ocjena</label>

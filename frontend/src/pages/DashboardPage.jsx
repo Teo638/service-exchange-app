@@ -27,11 +27,10 @@ function DashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? 'border-orange-500 text-orange-500'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                className={`px-6 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === tab.id
+                  ? 'border-orange-500 text-orange-500'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
               >
                 {tab.label}
               </button>

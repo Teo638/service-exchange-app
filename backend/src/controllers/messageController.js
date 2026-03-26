@@ -36,4 +36,45 @@ const getChatHistory = async (req, res) => {
     }
 };
 
-module.exports = { sendMessage, getChatHistory };
+const getContacts = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        
+        const contacts = await pool.query(
+            `SELECT DISTINCT ON (u.id) 
+                u.id, 
+                u.name, 
+                m.content as last_message, 
+                m.created_at,
+                (SELECT COUNT(*) FROM messages 
+                 WHERE sender_id = u.id AND receiver_id = $1 AND is_read = false) as unread_count
+             FROM users u
+             JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
+             WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND u.id != $1
+             ORDER BY u.id, m.created_at DESC`,
+            [userId]
+        );
+        res.json(contacts.rows);
+    } catch (err) {
+        console.error("Greška:", err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+const markAsRead = async (req, res) => {
+    const myId = req.user.id;
+    const { senderId } = req.params; 
+
+    try {
+        await pool.query(
+            'UPDATE messages SET is_read = true WHERE sender_id = $1 AND receiver_id = $2 AND is_read = false',
+            [senderId, myId]
+        );
+        res.json({ message: "Poruke označene kao pročitane." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { sendMessage, getChatHistory, getContacts, markAsRead };

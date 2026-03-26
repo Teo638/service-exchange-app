@@ -16,8 +16,8 @@ const sendRequest = async (req, res) => {
         }
 
         const newRequest = await pool.query(
-            'INSERT INTO requests (service_id, buyer_id, status, preferred_time, message) VALUES ($1, $2, $3) RETURNING *',
-            [service_id, buyer_id, 'pending', preferred_time, message]
+            'INSERT INTO requests (service_id, buyer_id, status, preferred_time, message, is_read_by_seller) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [service_id, buyer_id, 'pending', preferred_time, message, false]
         );
 
         res.status(201).json(newRequest.rows[0]);
@@ -31,12 +31,13 @@ const sendRequest = async (req, res) => {
 const getMySentRequests = async (req, res) => {
     const userId = req.user.id;
     try {
+        await pool.query('UPDATE requests SET is_read_by_buyer = true WHERE buyer_id = $1', [userId]);
         const requests = await pool.query(
             `SELECT requests.*, services.title as service_title, users.name as seller_name 
              FROM requests 
              JOIN services ON requests.service_id = services.id 
              JOIN users ON services.user_id = users.id 
-             WHERE requests.buyer_id = $1`,
+             WHERE requests.buyer_id = $1 ORDER BY requests.created_at DESC`,
             [userId]
         );
         res.json(requests.rows);
@@ -50,12 +51,17 @@ const getMySentRequests = async (req, res) => {
 const getReceivedRequests = async (req, res) => {
     const userId = req.user.id;
     try {
+          await pool.query(
+            'UPDATE requests SET is_read_by_seller = true FROM services WHERE requests.service_id = services.id AND services.user_id = $1', 
+            [userId]
+        );
+
         const requests = await pool.query(
             `SELECT requests.*, services.title as service_title, users.name as buyer_name 
              FROM requests 
              JOIN services ON requests.service_id = services.id 
              JOIN users ON requests.buyer_id = users.id 
-             WHERE services.user_id = $1`,
+             WHERE services.user_id = $1 ORDER BY requests.created_at DESC`,
             [userId]
         );
         res.json(requests.rows);
@@ -83,7 +89,7 @@ const updateRequestStatus = async (req, res) => {
         if (request.rows[0].seller_id !== userId) return res.status(403).json({ message: "Nemate ovlasti za ovu akciju." });
 
         const updatedRequest = await pool.query(
-            'UPDATE requests SET status = $1 WHERE id = $2 RETURNING *',
+            'UPDATE requests SET status = $1, is_read_by_buyer = false WHERE id = $2 RETURNING *',
             [status, id]
         );
 

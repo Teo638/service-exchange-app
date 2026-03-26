@@ -36,4 +36,27 @@ const getChatHistory = async (req, res) => {
     }
 };
 
-module.exports = { sendMessage, getChatHistory };
+const getContacts = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        
+        const contacts = await pool.query(
+            `SELECT DISTINCT ON (u.id) 
+                u.id, 
+                u.name, 
+                m.content as last_message, 
+                m.created_at
+             FROM users u
+             JOIN messages m ON (u.id = m.sender_id OR u.id = m.receiver_id)
+             WHERE (m.sender_id = $1 OR m.receiver_id = $1) AND u.id != $1
+             ORDER BY u.id, m.created_at DESC`,
+            [userId]
+        );
+        res.json(contacts.rows);
+    } catch (err) {
+        console.error("Greška:", err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { sendMessage, getChatHistory, getContacts };

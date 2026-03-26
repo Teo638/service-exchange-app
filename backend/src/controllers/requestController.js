@@ -16,7 +16,7 @@ const sendRequest = async (req, res) => {
         }
 
         const newRequest = await pool.query(
-            'INSERT INTO requests (service_id, buyer_id, status, preferred_time, message) VALUES ($1, $2, $3) RETURNING *',
+            'INSERT INTO requests (service_id, buyer_id, status, preferred_time, message) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [service_id, buyer_id, 'pending', preferred_time, message]
         );
 

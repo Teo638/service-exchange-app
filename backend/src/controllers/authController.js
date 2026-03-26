@@ -1,6 +1,9 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
@@ -74,4 +77,43 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser };
+const googleLogin = async (req, res) => {
+    const { idToken } = req.body;
+
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const { name, email, sub: google_id } = ticket.getPayload();
+
+        let userResult = await pool.query('SELECT * FROM users WHERE google_id = $1 OR email = $2', [google_id, email]);
+
+        let user;
+        if (userResult.rows.length === 0) {
+            const newUser = await pool.query(
+                'INSERT INTO users (name, email, google_id) VALUES ($1, $2, $3) RETURNING id, name, email',
+                [name, email, google_id]
+            );
+            user = newUser.rows[0];
+        } else {
+            user = userResult.rows[0];
+            if (!user.google_id) {
+                await pool.query('UPDATE users SET google_id = $1 WHERE email = $2', [google_id, email]);
+            }
+        }
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+
+        res.json({
+            message: "Google prijava uspješna!",
+            token,
+            user: { id: user.id, name: user.name, email: user.email }
+        });
+    } catch (err) {
+        console.error("Google Auth Error:", err);
+        res.status(400).json({ message: "Google verifikacija neuspješna." });
+    }
+};
+
+module.exports = { registerUser, loginUser, googleLogin };

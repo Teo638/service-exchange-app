@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 
 function DashboardPage() {
   const [activeTab, setActiveTab] = useState('ponude')
-  const { user } = useAuth()
+  const { user, notifications } = useAuth()
 
   const tabs = [
     { id: 'ponude', label: 'Moje ponude' },
@@ -27,12 +27,23 @@ function DashboardPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-3 text-sm font-semibold border-b-2 transition-all duration-200 ${activeTab === tab.id
+                className={`px-6 py-3 text-sm font-semibold border-b-2 transition-all duration-200 flex items-center gap-2 ${activeTab === tab.id
                   ? 'border-orange-500 text-orange-500'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 {tab.label}
+                {tab.id === 'primljeni' && notifications.unreadReceived > 0 && (
+                  <span className="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {notifications.unreadReceived}
+                  </span>
+                )}
+
+                {tab.id === 'upiti' && notifications.unreadSent > 0 && (
+                  <span className="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                    {notifications.unreadSent}
+                  </span>
+                )}
               </button>
             ))}
           </div>

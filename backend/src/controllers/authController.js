@@ -116,4 +116,32 @@ const googleLogin = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, googleLogin };
+const getNotifications = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        const messageCount = await pool.query(
+            'SELECT COUNT(*)::int FROM messages WHERE receiver_id = $1 AND is_read = false',
+            [userId]
+        );
+        const receivedCount = await pool.query(
+            `SELECT COUNT(*)::int FROM requests 
+             JOIN services ON requests.service_id = services.id
+             WHERE services.user_id = $1 AND requests.is_read_by_seller = false`,
+            [userId]
+        );
+        const sentCount = await pool.query(
+            'SELECT COUNT(*)::int FROM requests WHERE buyer_id = $1 AND is_read_by_buyer = false',
+            [userId]
+        );
+        res.json({
+            messages: messageCount.rows[0].count,
+            unreadReceived: receivedCount.rows[0].count,
+            unreadSent: sentCount.rows[0].count
+        });
+    } catch (err) {
+        console.error("Greška pri brojanju obavijesti:", err.message);
+        res.status(500).json({ messages: 0, unreadReceived: 0, unreadSent: 0 });
+    }
+};
+
+module.exports = { registerUser, loginUser, googleLogin, getNotifications };

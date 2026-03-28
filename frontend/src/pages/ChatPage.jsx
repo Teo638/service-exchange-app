@@ -6,7 +6,7 @@ import api from '../api'
 
 function ChatPage() {
   const { receiverId: paramReceiverId } = useParams()
-  const { user } = useAuth()
+  const { user, fetchNotifications } = useAuth()
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
   const [activeChat, setActiveChat] = useState(paramReceiverId || null)
@@ -60,6 +60,22 @@ function ChatPage() {
     fetchContacts()
   }, [activeChat])
 
+
+  useEffect(() => {
+    if (activeChat) {
+      const markAsRead = async () => {
+        try {
+          await api.put(`/messages/read/${activeChat}`);
+          fetchNotifications();
+          fetchContacts();
+        } catch (err) {
+          console.error("Greška pri označavanju poruka pročitanim:", err);
+        }
+      };
+      markAsRead();
+    }
+  }, [activeChat]);
+
   const handleSendMessage = async (e) => {
     e.preventDefault()
     if (!newMessage.trim() || !activeChat) return
@@ -109,9 +125,16 @@ function ChatPage() {
                 <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
                   {contact.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-slate-800 truncate">{contact.name}</p>
-                  <p className="text-xs text-gray-400 truncate">{contact.last_message}</p>
+                <div className="flex-1 min-w-0 flex justify-between items-center gap-2">
+                  <div className="truncate">
+                    <p className="font-bold text-slate-800 truncate">{contact.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{contact.last_message}</p>
+                  </div>
+                  {contact.unread_count > 0 && (
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
+                      {contact.unread_count}
+                    </span>
+                  )}
                 </div>
               </div>
             ))

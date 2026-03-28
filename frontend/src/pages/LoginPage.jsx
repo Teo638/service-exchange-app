@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
+import { GoogleLogin } from '@react-oauth/google'
 
 function LoginPage() {
   const [email, setEmail] = useState('')
@@ -9,6 +10,18 @@ function LoginPage() {
   const [error, setError] = useState('')
   const { login } = useAuth()
   const navigate = useNavigate()
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await api.post('/auth/google', {
+        idToken: credentialResponse.credential
+      })
+      login(res.data.user, res.data.token)
+      navigate('/')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google prijava nije uspjela.')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -59,6 +72,13 @@ function LoginPage() {
               Prijavi se
             </button>
           </form>
+          <div className="mt-4 flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google prijava nije uspjela.')}
+              useOneTap
+            />
+          </div>
         </div>
         <div className="hidden md:flex w-1/2 bg-orange-500 flex-col items-center justify-center p-10 text-white">
           <p className="text-3xl font-bold mb-4 text-center">🤝 Service Exchange</p>

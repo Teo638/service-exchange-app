@@ -159,8 +159,11 @@ function HomePage() {
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-4xl ">
-                            {categoryIcons[service.category] || '🛠️'}
+                          <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+                              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" strokeWidth="1.5" />
+                            </svg>
                           </div>
                         )}
                       </div>

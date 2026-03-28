@@ -1,8 +1,9 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { MessageSquareMore, LayoutDashboard, LogOut } from 'lucide-react'
 
 function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, logout, notifications } = useAuth()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -22,11 +23,21 @@ function Navbar() {
           </Link>
           {user ? (
             <>
-              <Link to="/dashboard" className="text-gray-600 hover:text-orange-600 transition">
+              <Link to="/dashboard" className="text-gray-600 hover:text-orange-600 transition  relative">
                 Dashboard
+                {(notifications.unreadReceived + notifications.unreadSent) > 0 && (
+                  <span className="absolute -top-3 -right-3 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
+                    {notifications.unreadReceived + notifications.unreadSent}
+                  </span>
+                )}
               </Link>
-              <Link to="/chat" className="text-gray-600 hover:text-orange-600">
-                Poruke
+              <Link to="/chat" className="text-gray-600 hover:text-orange-600  relative  p-2 transition" title="Poruke">
+                <MessageSquareMore size={22} strokeWidth={2} />
+                {notifications.messages > 0 && (
+                  <span className="absolute top-0 right-0 transform translate-x-1/2 -translate-y-1/3 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">
+                    {notifications.messages}
+                  </span>
+                )}
               </Link>
               <span className="text-gray-500 text-sm">Zdravo, {user.name}!</span>
               <button

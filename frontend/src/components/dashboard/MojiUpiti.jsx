@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import api from '../../api'
+import { useAuth } from '../../context/AuthContext'
 
 function MojiUpiti() {
+  const { fetchNotifications } = useAuth()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -23,6 +25,7 @@ function MojiUpiti() {
 
   useEffect(() => {
     fetchRequests()
+    fetchNotifications()
   }, [])
 
 
@@ -81,39 +84,45 @@ function MojiUpiti() {
         </div>
       ) : (
         <div className="space-y-4">
-          {requests.map(req => (
-            <div key={req.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
-                <p className="text-sm text-slate-500 mt-1">
-                  Davatelj usluge: <span className="font-semibold text-slate-900">{req.seller_name}</span>
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Upit poslan: {new Date(req.created_at).toLocaleDateString('hr-HR')}
-                </p>
-                <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
-                  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
-                  <p className="text-sm text-slate-600 italic">"{req.message}"</p>
-                  {req.preferred_time && (
-                    <p className="text-xs text-orange-400 mt-2 font-semibold">
-                      📅 Termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
-                    </p>
+          {requests.map(req => {
+            return (
+              <div
+                key={req.id}
+                className={`rounded-2xl shadow-sm border p-5 flex items-center justify-between transition-all bg-white border-gray-100`}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
+                  </div>
+                  <p className="text-sm text-slate-500 mt-1">
+                    Davatelj usluge: <span className="font-semibold text-slate-900">{req.seller_name}</span>
+                  </p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Upit poslan: {new Date(req.created_at).toLocaleDateString('hr-HR')}
+                  </p>
+                  <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
+                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
+                    <p className="text-sm text-slate-600 italic">"{req.message}"</p>
+                    {req.preferred_time && (
+                      <p className="text-xs text-orange-400 mt-2 font-semibold">
+                        📅 Termin: {new Date(req.preferred_time).toLocaleString('hr-HR', { dateStyle: 'long', timeStyle: 'short' })}
+                      </p>
+                    )}
+                  </div>
+                  {req.status === 'completed' && (
+                    <button
+                      onClick={() => setSelectedRequestId(req.id)}
+                      className="mt-3 text-xs font-bold bg-indigo-50 text-slate-900 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase tracking-wider"
+                    >
+                      ⭐ Ostavi recenziju
+                    </button>
                   )}
                 </div>
-                {req.status === 'completed' && (
-                  <button
-                    onClick={() => setSelectedRequestId(req.id)}
-                    className="mt-3 text-xs font-bold bg-indigo-50 text-slate-900 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors uppercase tracking-wider"
-                  >
-                    ⭐ Ostavi recenziju
-                  </button>
-                )}
+                <div className="flex flex-col items-end gap-2">
+                  {statusBadge(req.status)}
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                {statusBadge(req.status)}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

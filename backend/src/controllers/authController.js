@@ -5,35 +5,35 @@ const { OAuth2Client } = require('google-auth-library');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+const generateAccessToken = (user) => {
+    
+    return jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+};
+
+const generateRefreshToken = (user) => {
+    return jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+};
+
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
-
     try {
-       
         if (!name || !email || !password) {
             return res.status(400).json({ message: "Molimo ispunite sva polja." });
         }
-
-        
         const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
         if (userExists.rows.length > 0) {
             return res.status(400).json({ message: "Korisnik s tim emailom već postoji." });
         }
-
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
-        
         const newUser = await pool.query(
             'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
             [name, email, hashedPassword]
         );
-
         res.status(201).json({
             message: "Korisnik uspješno registriran!",
             user: newUser.rows[0]
         });
-
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server error");
@@ -43,34 +43,42 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
-        
-        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (user.rows.length === 0) {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
             return res.status(400).json({ message: "Pogrešan email ili lozinka." });
         }
 
         
-        const isMatch = await bcrypt.compare(password, user.rows[0].password);
+        const user = result.rows[0];
+
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: "Pogrešan email ili lozinka." });
         }
 
-       
-        const token = jwt.sign(
-            { id: user.rows[0].id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' } 
-        );
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        
+        
+        await pool.query('INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)', 
+            [user.id, refreshToken, expiresAt]);
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false, 
+            sameSite: 'Lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 
+        });
 
         res.json({
             message: "Prijava uspješna!",
-            token: token,
-            user: {
-                id: user.rows[0].id,
-                name: user.rows[0].name,
-                email: user.rows[0].email
-            }
+            accessToken, 
+            user: { id: user.id, name: user.name, email: user.email }
         });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server error");
@@ -79,7 +87,6 @@ const loginUser = async (req, res) => {
 
 const googleLogin = async (req, res) => {
     const { idToken } = req.body;
-
     try {
         const ticket = await client.verifyIdToken({
             idToken,
@@ -103,16 +110,63 @@ const googleLogin = async (req, res) => {
             }
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
+
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + 7);
+        await pool.query('INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)', [user.id, refreshToken, expiresAt]);
+
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: 'Lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         res.json({
             message: "Google prijava uspješna!",
-            token,
+            accessToken,
             user: { id: user.id, name: user.name, email: user.email }
         });
+
     } catch (err) {
         console.error("Google Auth Error:", err);
         res.status(400).json({ message: "Google verifikacija neuspješna." });
+    }
+};
+
+const handleRefreshToken = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: "Niste prijavljeni." });
+
+    try {
+        const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
+        if (result.rows.length === 0) return res.status(403).json({ message: "Neispravan token." });
+
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+            if (err) return res.status(403).json({ message: "Token je istekao." });
+            
+            const accessToken = generateAccessToken({ id: decoded.id });
+            res.json({ accessToken });
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+const logoutUser = async (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+    try {
+        if (refreshToken) {
+            await pool.query('DELETE FROM refresh_tokens WHERE token = $1', [refreshToken]);
+        }
+        res.clearCookie('refreshToken');
+        res.json({ message: "Odjava uspješna." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
     }
 };
 
@@ -144,4 +198,4 @@ const getNotifications = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, googleLogin, getNotifications };
+module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser };

@@ -15,7 +15,7 @@ function ChatPage() {
   const scrollRef = useRef()
 
   useEffect(() => {
-    socket.current = io('http://localhost:5000')
+    socket.current = io('http://localhost:5000', { withCredentials: true })
 
     if (user) {
       socket.current.emit('addUser', user.id)

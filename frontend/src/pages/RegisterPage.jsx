@@ -22,7 +22,7 @@ function RegisterPage() {
     try {
       await api.post('/auth/register', { name, email, password })
       const res = await api.post('/auth/login', { email, password })
-      login(res.data.user, res.data.token)
+      login(res.data.user, res.data.accessToken)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Greška pri registraciji.')

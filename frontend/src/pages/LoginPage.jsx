@@ -16,7 +16,7 @@ function LoginPage() {
       const res = await api.post('/auth/google', {
         idToken: credentialResponse.credential
       })
-      login(res.data.user, res.data.token)
+      login(res.data.user, res.data.accessToken)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Google prijava nije uspjela.')
@@ -28,7 +28,7 @@ function LoginPage() {
     setError('')
     try {
       const res = await api.post('/auth/login', { email, password })
-      login(res.data.user, res.data.token)
+      login(res.data.user, res.data.accessToken)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'Greška pri prijavi.')

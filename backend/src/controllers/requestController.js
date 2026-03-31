@@ -2,7 +2,7 @@
 
 
     const sendRequest = async (req, res) => {
-        const { service_id, preferred_time, message } = req.body;
+        const { service_id, preferred_time, message = null } = req.body;
         const buyer_id = req.user.id;
 
         try {
@@ -41,7 +41,7 @@
                 [userId]
             );
 
-            await pool.query('UPDATE requests SET is_read_by_buyer = true WHERE buyer_id = $1', [userId]);
+            
 
             res.json(requests.rows);
         } catch (err) {
@@ -64,10 +64,7 @@
                 [userId]
             );
             
-            await pool.query(
-                'UPDATE requests SET is_read_by_seller = true FROM services WHERE requests.service_id = services.id AND services.user_id = $1', 
-                [userId]
-            );
+            
 
             res.json(requests.rows);
         } catch (err) {
@@ -105,4 +102,26 @@
         }
     };
 
-    module.exports = { sendRequest, getMySentRequests, getReceivedRequests, updateRequestStatus };
+    const markRequestsAsRead = async (req, res) => {
+    const userId = req.user.id;
+    const { type } = req.body; 
+
+    try {
+        if (type === 'received') {
+            
+            await pool.query(
+                'UPDATE requests SET is_read_by_seller = true FROM services WHERE requests.service_id = services.id AND services.user_id = $1', 
+                [userId]
+            );
+        } else if (type === 'sent') {
+            
+            await pool.query('UPDATE requests SET is_read_by_buyer = true WHERE buyer_id = $1', [userId]);
+        }
+        res.json({ message: "Zahtjevi označeni kao pročitani." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+    module.exports = { sendRequest, getMySentRequests, getReceivedRequests, updateRequestStatus, markRequestsAsRead };

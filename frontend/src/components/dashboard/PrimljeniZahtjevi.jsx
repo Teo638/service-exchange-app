@@ -22,12 +22,19 @@ function PrimljeniZahtjevi() {
   useEffect(() => {
     fetchRequests()
     fetchNotifications()
+
+    return () => {
+      api.put('/requests/mark-as-read', { type: 'received' })
+        .then(() => fetchNotifications())
+        .catch(err => console.error("Greška pri označavanju:", err))
+    }
   }, [])
 
   const handleStatus = async (id, status) => {
     try {
       await api.put(`/requests/${id}/status`, { status })
       fetchRequests()
+      fetchNotifications()
     } catch (err) {
       console.error(err)
     }
@@ -67,14 +74,20 @@ function PrimljeniZahtjevi() {
       ) : (
         <div className="space-y-4">
           {requests.map(req => {
+            const isNew = req.is_read_by_seller === false;
             return (
-              <div key={req.id} className={`rounded-2xl shadow-sm border p-5 transition-all $ bg-white border-gray-100'
+              <div key={req.id} className={`rounded-2xl shadow-sm border p-5 transition-all ${isNew ? 'bg-blue-50/50 border-blue-200' : 'bg-white border-gray-100'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
+                      {isNew && (
+                        <span className="bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                          NOVO
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-slate-500 mt-1">
                       Od korisnika: <span className="font-semibold text-slate-900">{req.buyer_name}</span>
@@ -96,10 +109,7 @@ function PrimljeniZahtjevi() {
                   <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
                     <button
                       onClick={() => handleStatus(req.id, 'accepted')}
-                      style={{ border: '1px solid #86efac', color: '#22c55e' }}
-                      onMouseEnter={e => e.target.style.backgroundColor = '#f0fdf4'}
-                      onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
-                      className="px-4 py-1.5 rounded-lg text-sm font-semibold transition"
+                      className="px-4 py-1.5 rounded-lg text-sm font-semibold transition border border-green-200 text-green-600 hover:bg-green-50"
                     >
                       Prihvati
                     </button>
@@ -112,7 +122,7 @@ function PrimljeniZahtjevi() {
                   </div>
                 )}
                 {req.status === 'accepted' && (
-                  <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
                     <button
                       onClick={() => handleStatus(req.id, 'completed')}
                       className="border border-blue-200 text-blue-500 px-4 py-1.5 rounded-lg text-sm hover:bg-blue-50 transition font-semibold"

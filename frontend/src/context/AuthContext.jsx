@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       fetchNotifications();
-      const interval = setInterval(fetchNotifications, 60000);
+      const interval = setInterval(fetchNotifications, 3000);
       return () => clearInterval(interval);
     }
   }, [user]);

@@ -1,4 +1,6 @@
 const pool = require('../config/db');
+const fs = require('fs'); 
+const path = require('path');
 
 
 const createService = async (req, res) => {
@@ -34,8 +36,10 @@ const getAllServices = async (req, res) => {
 const getServiceById = async (req, res) => {
     const { id } = req.params;
     try {
+        await pool.query('UPDATE services SET views_count = views_count + 1 WHERE id = $1', [id]);
+
         const service = await pool.query(
-            'SELECT services.*, users.name as provider_name, users.email as provider_email FROM services JOIN users ON services.user_id = users.id WHERE services.id = $1',
+            'SELECT services.*, users.name as provider_name, users.email as provider_email, users.avatar_url as provider_avatar FROM services JOIN users ON services.user_id = users.id WHERE services.id = $1',
             [id]
         );
 
@@ -81,12 +85,22 @@ const updateService = async (req, res) => {
 const deleteService = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
+    const isAdmin = req.user.is_admin;
 
     try {
-        const service = await pool.query('SELECT * FROM services WHERE id = $1', [id]);
+        const serviceResult = await pool.query('SELECT * FROM services WHERE id = $1', [id]);
+        const service = serviceResult.rows[0];
 
-        if (service.rows.length === 0) return res.status(404).json({ message: "Usluga nije pronađena." });
-        if (service.rows[0].user_id !== userId) return res.status(403).json({ message: "Nemate ovlasti za brisanje ove usluge." });
+        if (!service) return res.status(404).json({ message: "Usluga nije pronađena." });
+        
+        if (service.user_id !== userId && !isAdmin) {
+            return res.status(403).json({ message: "Nemate ovlasti za brisanje ove usluge." });
+        }
+
+         if (service.image_url) {
+            const imagePath = path.join(__dirname, '../../', service.image_url);
+            if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+        }
 
         await pool.query('DELETE FROM services WHERE id = $1', [id]);
         res.json({ message: "Usluga uspješno obrisana." });

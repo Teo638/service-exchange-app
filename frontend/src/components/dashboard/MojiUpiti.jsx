@@ -15,6 +15,7 @@ function MojiUpiti() {
   const fetchRequests = async () => {
     try {
       const res = await api.get('/requests/sent')
+      console.log("Moji upiti podaci:", res.data)
       setRequests(res.data)
     } catch (err) {
       console.error(err)
@@ -28,6 +29,15 @@ function MojiUpiti() {
     fetchNotifications()
   }, [])
 
+  const markAllAsRead = async () => {
+    try {
+      await api.put('/requests/mark-as-read', { type: 'sent' })
+      await fetchRequests()
+      await fetchNotifications()
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const handleReviewSubmit = async (e) => {
     e.preventDefault()
@@ -72,10 +82,22 @@ function MojiUpiti() {
   }
 
   if (loading) return <div className="text-center py-20 text-gray-400">Učitavanje...</div>
+  const hasNewUpdates = requests.some(r => r.is_read_by_buyer === false)
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-slate-800 mb-6">Moji upiti ({requests.length})</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-bold text-slate-800 mb-6">Moji upiti ({requests.length})</h2>
+
+        {hasNewUpdates && (
+          <button
+            onClick={markAllAsRead}
+            className="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded-full font-bold hover:bg-indigo-700 transition"
+          >
+            ✓ Označi sve pročitanim
+          </button>
+        )}
+      </div>
 
       {requests.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
@@ -85,22 +107,26 @@ function MojiUpiti() {
       ) : (
         <div className="space-y-4">
           {requests.map(req => {
+            const isNewUpdate = req.is_read_by_buyer === false;
             return (
               <div
                 key={req.id}
-                className={`rounded-2xl shadow-sm border p-5 flex items-center justify-between transition-all bg-white border-gray-100`}>
+                className={`rounded-2xl shadow-sm border p-5 flex items-center justify-between transition-all ${isNewUpdate ? 'bg-indigo-50 border-indigo-200 ring-1 ring-indigo-200' : 'bg-white border-gray-100'
+                  }`}>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="font-bold text-slate-800 text-base">{req.service_title}</p>
+                    {isNewUpdate && (
+                      <span className="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-md font-black animate-pulse">
+                        NOVI STATUS
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-slate-500 mt-1">
                     Davatelj usluge: <span className="font-semibold text-slate-900">{req.seller_name}</span>
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Upit poslan: {new Date(req.created_at).toLocaleDateString('hr-HR')}
-                  </p>
                   <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-100 text-left">
-                    <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Detalji mog upita:</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Moja poruka i termin:</p>
                     <p className="text-sm text-slate-600 italic">"{req.message}"</p>
                     {req.preferred_time && (
                       <p className="text-xs text-orange-400 mt-2 font-semibold">

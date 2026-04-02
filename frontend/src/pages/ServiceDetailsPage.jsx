@@ -28,6 +28,7 @@ function ServiceDetailsPage() {
   const [preferredHour, setPreferredHour] = useState('')
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchData = async () => {
       try {
         const res = await api.get(`/services/${id}`)
@@ -50,8 +51,8 @@ function ServiceDetailsPage() {
       navigate('/login')
       return
     }
-    if (!message || !preferredDate || !preferredHour) {
-      setError('Molimo popunite poruku i odaberite datum/vrijeme.')
+    if (!preferredDate || !preferredHour) {
+      setError('Molimo odaberite datum/vrijeme.')
       return
     }
     setSending(true)

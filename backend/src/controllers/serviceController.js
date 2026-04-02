@@ -22,11 +22,68 @@ const createService = async (req, res) => {
 
 
 const getAllServices = async (req, res) => {
+    const { search, category, location, minPrice, maxPrice, type, page = 1, limit = 10 } = req.query;
+
+    const offset = (page - 1) * limit;
+
     try {
-        const services = await pool.query(
-            'SELECT services.*, users.name as provider_name FROM services JOIN users ON services.user_id = users.id ORDER BY created_at DESC'
-        );
-        res.json(services.rows);
+        let queryText = `
+            SELECT services.*, users.name as provider_name 
+            FROM services 
+            JOIN users ON services.user_id = users.id 
+            WHERE 1=1`; 
+        
+        let queryParams = [];
+
+        
+        if (search) {
+            queryParams.push(`%${search}%`);
+            queryText += ` AND (services.title ILIKE $${queryParams.length} OR services.description ILIKE $${queryParams.length})`;
+        }
+
+        if (category) {
+            queryParams.push(category);
+            queryText += ` AND services.category = $${queryParams.length}`;
+        }
+
+        if (location) {
+            queryParams.push(location);
+            queryText += ` AND services.location = $${queryParams.length}`;
+        }
+
+        if (minPrice) {
+            queryParams.push(minPrice);
+            queryText += ` AND services.price >= $${queryParams.length}`;
+        }
+
+        if (maxPrice) {
+            queryParams.push(maxPrice);
+            queryText += ` AND services.price <= $${queryParams.length}`;
+        }
+
+        if (type) {
+            queryParams.push(type);
+            queryText += ` AND services.service_type = $${queryParams.length}`;
+        }
+
+        
+        queryText += ` ORDER BY services.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+        queryParams.push(limit, offset);
+
+        const services = await pool.query(queryText, queryParams);
+
+        
+        const totalCountResult = await pool.query('SELECT COUNT(*) FROM services');
+        const totalCount = parseInt(totalCountResult.rows[0].count);
+
+        res.json({
+            services: services.rows,
+            pagination: {
+                totalServices: totalCount,
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalCount / limit)
+            }
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Server error");

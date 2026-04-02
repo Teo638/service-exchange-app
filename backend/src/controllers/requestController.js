@@ -124,4 +124,36 @@
     }
 };
 
-    module.exports = { sendRequest, getMySentRequests, getReceivedRequests, updateRequestStatus, markRequestsAsRead };
+const deleteReceivedRequest = async (req, res) => {
+    const { id } = req.params; 
+    const userId = req.user.id; 
+
+    try {
+        
+        const request = await pool.query(
+            `SELECT requests.*, services.user_id as seller_id 
+             FROM requests 
+             JOIN services ON requests.service_id = services.id 
+             WHERE requests.id = $1`, [id]
+        );
+
+        if (request.rows.length === 0) {
+            return res.status(404).json({ message: "Zahtjev nije pronađen." });
+        }
+
+        
+        if (request.rows[0].seller_id !== userId) {
+            return res.status(403).json({ message: "Nemate ovlasti za brisanje ovog zahtjeva." });
+        }
+
+       
+        await pool.query('DELETE FROM requests WHERE id = $1', [id]);
+
+        res.json({ message: "Zahtjev uspješno obrisan." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+    module.exports = { sendRequest, getMySentRequests, getReceivedRequests, updateRequestStatus, markRequestsAsRead, deleteReceivedRequest };

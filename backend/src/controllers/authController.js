@@ -2,12 +2,17 @@ const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { OAuth2Client } = require('google-auth-library');
+const fs = require('fs'); 
+const path = require('path');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const generateAccessToken = (user) => {
     
-    return jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+    return jwt.sign(
+        { id: user.id, is_admin: user.is_admin }, 
+        process.env.ACCESS_TOKEN_SECRET, 
+        { expiresIn: '15m' });
 };
 
 const generateRefreshToken = (user) => {
@@ -198,4 +203,47 @@ const getNotifications = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser };
+const updateProfile = async (req, res) => {
+    const userId = req.user.id;
+    const { name, password } = req.body;
+    let avatarUrl = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+        const user = userResult.rows[0];
+
+        if (!user) return res.status(404).json({ message: "Korisnik nije pronađen." });
+
+        let hashedPassword = user.password;
+        
+        if (password && password.trim() !== "") {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+
+        
+        if (req.file && user.avatar_url) {
+            const oldPath = path.join(__dirname, '../../', user.avatar_url);
+            if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } else if (!req.file) {
+            avatarUrl = user.avatar_url; 
+        }
+
+        
+        const updatedUser = await pool.query(
+            'UPDATE users SET name = $1, password = $2, avatar_url = $3 WHERE id = $4 RETURNING id, name, email, avatar_url, is_admin',
+            [name || user.name, hashedPassword, avatarUrl, userId]
+        );
+
+        res.json({
+            message: "Profil uspješno ažuriran!",
+            user: updatedUser.rows[0]
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile };

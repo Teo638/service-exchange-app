@@ -13,6 +13,7 @@ const requestRoutes = require('./src/routes/requestRoutes');
 const messageRoutes = require('./src/routes/messageRoutes'); 
 const questionRoutes = require('./src/routes/questionRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -44,6 +45,7 @@ app.use('/api/requests', requestRoutes);
 app.use('/api/messages', messageRoutes); 
 app.use('/api/questions', questionRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 let onlineUsers = [];

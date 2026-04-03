@@ -64,4 +64,32 @@ const getQuestionsByService = async (req, res) => {
     }
 };
 
-module.exports = { askQuestion, answerQuestion, getQuestionsByService };
+const deleteQuestion = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const isAdmin = req.user.is_admin;
+
+    try {
+        const questionData = await pool.query(
+            `SELECT q.*, s.user_id as service_owner_id 
+             FROM public_questions q
+             JOIN services s ON q.service_id = s.id
+             WHERE q.id = $1`, [id]
+        );
+
+        if (questionData.rows.length === 0) return res.status(404).json({ message: "Pitanje nije pronađeno." });
+        const q = questionData.rows[0];
+
+        if (q.user_id !== userId && q.service_owner_id !== userId && !isAdmin) {
+            return res.status(403).json({ message: "Nemate ovlasti za brisanje ovog pitanja." });
+        }
+
+        await pool.query('DELETE FROM public_questions WHERE id = $1', [id]);
+        res.json({ message: "Pitanje uspješno obrisano." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { askQuestion, answerQuestion, getQuestionsByService, deleteQuestion };

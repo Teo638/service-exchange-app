@@ -22,7 +22,10 @@ const createService = async (req, res) => {
 
 
 const getAllServices = async (req, res) => {
-    const { search, category, location, minPrice, maxPrice, type, page = 1, limit = 10 } = req.query;
+    const { search, category, location, minPrice, maxPrice, type} = req.query;
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
 
     const offset = (page - 1) * limit;
 
@@ -66,6 +69,13 @@ const getAllServices = async (req, res) => {
             queryText += ` AND services.service_type = $${queryParams.length}`;
         }
 
+        const countText = queryText.replace(
+            'SELECT services.*, users.name as provider_name',
+            'SELECT COUNT(*)'
+        );
+        const totalCountResult = await pool.query(countText, queryParams);
+        const totalCount = parseInt(totalCountResult.rows[0].count);
+
         
         queryText += ` ORDER BY services.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
         queryParams.push(limit, offset);
@@ -73,8 +83,6 @@ const getAllServices = async (req, res) => {
         const services = await pool.query(queryText, queryParams);
 
         
-        const totalCountResult = await pool.query('SELECT COUNT(*) FROM services');
-        const totalCount = parseInt(totalCountResult.rows[0].count);
 
         res.json({
             services: services.rows,
@@ -122,7 +130,14 @@ const updateService = async (req, res) => {
         if (service.rows.length === 0) return res.status(404).json({ message: "Usluga nije pronađena." });
         if (service.rows[0].user_id !== userId) return res.status(403).json({ message: "Nemate ovlasti za izmjenu ove usluge." });
 
-        const imageUrl = req.file ? `/uploads/${req.file.filename}` : service.rows[0].image_url;
+        let imageUrl = service.rows[0].image_url;
+        if (req.file) {
+            if (imageUrl) {
+                const oldPath = path.join(__dirname, '../../', service.rows[0].image_url);
+                if (fs.existsSync(oldPath)) await fs.promises.unlink(oldPath);
+            }
+            imageUrl = `/uploads/${req.file.filename}`;
+        }
 
         const updatedService = await pool.query(
             `UPDATE services 
@@ -156,7 +171,7 @@ const deleteService = async (req, res) => {
 
          if (service.image_url) {
             const imagePath = path.join(__dirname, '../../', service.image_url);
-            if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+            if (fs.existsSync(imagePath)) await fs.promises.unlink(imagePath);
         }
 
         await pool.query('DELETE FROM services WHERE id = $1', [id]);

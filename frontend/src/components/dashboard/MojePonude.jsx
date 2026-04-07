@@ -23,10 +23,11 @@ function MojePonude() {
   const fetchMyServices = async () => {
     try {
       const res = await api.get('/services')
-      const myServices = res.data.filter(s => s.user_id === user.id)
+      const allServices = res.data.services || []
+      const myServices = allServices.filter(s => s.user_id === user.id)
       setServices(myServices)
     } catch (err) {
-      console.error(err)
+      console.error("Greška pri dohvaćanju mojih usluga:", err)
     } finally {
       setLoading(false)
     }

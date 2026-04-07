@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage'
 import ProfilePage from './pages/ProfilePage'
 import ChatPage from './pages/ChatPage'
 import Navbar from './components/Navbar'
+import EditProfile from './pages/EditProfile'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/profile/:id" element={<ProfilePage />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:receiverId" element={<ChatPage />} />
+        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
     </BrowserRouter>
   )

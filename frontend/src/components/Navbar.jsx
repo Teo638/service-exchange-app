@@ -39,7 +39,22 @@ function Navbar() {
                   </span>
                 )}
               </Link>
-              <span className="text-gray-500 text-sm">Zdravo, {user.name}!</span>
+              <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/edit-profile')}>
+                {user.avatar_url ? (
+                  <img
+                    src={`http://localhost:5000${user.avatar_url}`}
+                    alt="Profil"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="text-gray-600 text-sm font-medium hidden md:block">
+                  {user.name}
+                </span>
+              </div>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition text-sm"

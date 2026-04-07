@@ -357,8 +357,16 @@ function ServiceDetailsPage() {
                 Ponuđač usluge
               </h3>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white">
-                  {service.provider_name?.charAt(0).toUpperCase()}
+                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white overflow-hidden border border-gray-100 shadow-sm">
+                  {service.provider_avatar ? (
+                    <img
+                      src={`http://localhost:5000${service.provider_avatar}`}
+                      alt={service.provider_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    service.provider_name?.charAt(0).toUpperCase()
+                  )}
                 </div>
                 <p className="font-semibold text-slate-900">{service.provider_name}</p>
               </div>

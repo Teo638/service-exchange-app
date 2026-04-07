@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import api from '../../api'
 import { useAuth } from '../../context/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 function PrimljeniZahtjevi() {
   const { fetchNotifications } = useAuth()
+  const navigate = useNavigate()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -39,6 +41,18 @@ function PrimljeniZahtjevi() {
       console.error(err)
     }
   }
+
+  const handleDeleteRequest = async (id) => {
+    if (!window.confirm('Jeste li sigurni da želite obrisati ovaj zahtjev?')) return;
+    try {
+      await api.delete(`/requests/${id}`);
+      setRequests(requests.filter(req => req.id !== id));
+      fetchNotifications();
+    } catch (err) {
+      console.error("Greška pri brisanju zahtjeva:", err);
+      alert("Nije moguće obrisati zahtjev.");
+    }
+  };
 
   const statusBadge = (status) => {
     const map = {
@@ -105,38 +119,57 @@ function PrimljeniZahtjevi() {
                   </div>
                   {statusBadge(req.status)}
                 </div>
-                {req.status === 'pending' && (
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => handleStatus(req.id, 'accepted')}
-                      className="px-4 py-1.5 rounded-lg text-sm font-semibold transition border border-green-200 text-green-600 hover:bg-green-50"
-                    >
-                      Prihvati
-                    </button>
-                    <button
-                      onClick={() => handleStatus(req.id, 'rejected')}
-                      className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-50 transition font-semibold"
-                    >
-                      Odbij
-                    </button>
+
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex gap-2">
+
+                    {req.status !== 'rejected' && (
+                      <button
+                        onClick={() => navigate(`/chat/${req.buyer_id}`)}
+                        className="border border-orange-200 text-orange-500 px-4 py-1.5 rounded-lg text-sm hover:bg-orange-50 transition font-semibold"
+                      >
+                        💬 Pošalji poruku
+                      </button>
+                    )}
+
+                    {req.status === 'pending' && (
+                      <>
+                        <button
+                          onClick={() => handleStatus(req.id, 'accepted')}
+                          className="px-4 py-1.5 rounded-lg text-sm font-semibold transition border border-green-200 text-green-600 hover:bg-green-50"
+                        >
+                          Prihvati
+                        </button>
+                        <button
+                          onClick={() => handleStatus(req.id, 'rejected')}
+                          className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-50 transition font-semibold"
+                        >
+                          Odbij
+                        </button>
+                      </>
+                    )}
+                    {req.status === 'accepted' && (
+                      <>
+                        <button
+                          onClick={() => handleStatus(req.id, 'completed')}
+                          className="border border-blue-200 text-blue-500 px-4 py-1.5 rounded-lg text-sm hover:bg-blue-50 transition font-semibold"
+                        >
+                          Označi kao obavljeno
+                        </button>
+                      </>
+                    )}
                   </div>
-                )}
-                {req.status === 'accepted' && (
-                  <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-                    <button
-                      onClick={() => handleStatus(req.id, 'completed')}
-                      className="border border-blue-200 text-blue-500 px-4 py-1.5 rounded-lg text-sm hover:bg-blue-50 transition font-semibold"
-                    >
-                      Označi kao obavljeno
-                    </button>
-                    <button
-                      onClick={() => window.location.href = `/chat/${req.buyer_id}`}
-                      className="border border-orange-200 text-orange-500 px-4 py-1.5 rounded-lg text-sm hover:bg-orange-50 transition font-semibold"
-                    >
-                      💬 Pošalji poruku
-                    </button>
-                  </div>
-                )}
+
+                  <button
+                    onClick={() => handleDeleteRequest(req.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200"
+                    title="Obriši zahtjev"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             );
           })}

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { MessageSquareMore, LayoutDashboard, LogOut } from 'lucide-react'
+import { MessageSquareMore, LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
 
 function Navbar() {
   const { user, logout, notifications } = useAuth()
@@ -51,15 +51,18 @@ function Navbar() {
                     {user.name?.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <span className="text-gray-600 text-sm font-medium hidden md:block">
-                  {user.name}
-                </span>
               </div>
+              {user.is_admin && (
+                <Link to="/admin" className="text-red-500 hover:text-red-700 transition" title="Admin Panel">
+                  <ShieldCheck size={22} />
+                </Link>
+              )}
               <button
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-1.5 rounded-lg hover:bg-red-600 transition text-sm"
+                className="text-gray-400 hover:text-red-600 p-2 transition"
+                title="Odjava"
               >
-                Odjava
+                <LogOut size={22} />
               </button>
             </>
           ) : (

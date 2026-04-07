@@ -109,6 +109,17 @@ function ServiceDetailsPage() {
     }
   };
 
+  const handleDeleteService = async () => {
+    if (!window.confirm('ADMIN: Jeste li sigurni da želite trajno obrisati ovu uslugu?')) return;
+    try {
+      await api.delete(`/services/${id}`);
+      alert('Usluga obrisana.');
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('Greška pri brisanju usluge.');
+    }
+  };
 
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -148,6 +159,14 @@ function ServiceDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           <div className="lg:col-span-2 space-y-6">
+            {user?.is_admin && (
+              <button
+                onClick={handleDeleteService}
+                className="bg-red-600 text-white px-3 py-1 rounded text-xs mb-2 hover:bg-red-700 transition"
+              >
+                OBRIŠI OGLAS (ADMIN)
+              </button>
+            )}
             {service.image_url ? (
               <img
                 src={`http://localhost:5000${service.image_url}`}
@@ -222,17 +241,17 @@ function ServiceDetailsPage() {
                   questions.map((q) => (
                     <div key={q.id} className="bg-gray-50 rounded-xl p-5 border border-gray-100  relative group">
 
-                        {(user?.id === q.user_id || isOwner || user?.is_admin) && (
-        <button 
-          onClick={() => handleDeleteQuestion(q.id)}
-          className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors p-1"
-          title="Obriši pitanje"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      )}
+                      {(user?.id === q.user_id || isOwner || user?.is_admin) && (
+                        <button
+                          onClick={() => handleDeleteQuestion(q.id)}
+                          className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors p-1"
+                          title="Obriši pitanje"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
 
                       <div className="flex gap-3">
                         <span className="font-black text-orange-500 text-lg">P:</span>

@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage'
 import ChatPage from './pages/ChatPage'
 import Navbar from './components/Navbar'
 import EditProfile from './pages/EditProfile'
+import AdminPage from './pages/AdminPage'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:receiverId" element={<ChatPage />} />
         <Route path="/edit-profile" element={<EditProfile />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   )

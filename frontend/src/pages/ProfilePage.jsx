@@ -17,18 +17,22 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchData = async () => {
       try {
+        setLoading(true);
         const servicesRes = await api.get('/services')
-        const userServices = servicesRes.data.filter(s => s.user_id === parseInt(id))
-        setServices(userServices)
+        const allServices = servicesRes.data.services || [];
+        const userServices = allServices.filter(s => s.user_id === parseInt(id));
+        setServices(userServices);
         const reviewsRes = await api.get(`/reviews/user/${id}`)
-        setReviews(reviewsRes.data)
+        setReviews(reviewsRes.data);
         if (userServices.length > 0) {
           const detailRes = await api.get(`/services/${userServices[0].id}`)
           setProfile({
             name: userServices[0].provider_name,
             email: detailRes.data.provider_email,
+            avatar: userServices[0].provider_avatar
           })
         }
       } catch (err) {

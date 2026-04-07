@@ -6,61 +6,66 @@ function HomePage() {
   const [services, setServices] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState('Sve')
+  const [location, setLocation] = useState('')
+  const [minPrice, setMinPrice] = useState('')
+  const [maxPrice, setMaxPrice] = useState('')
+  const [serviceType, setServiceType] = useState('')
   const [loading, setLoading] = useState(true)
-  const [visibleCount, setVisibleCount] = useState(8)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalServices, setTotalServices] = useState(0)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const res = await api.get('/services')
-        const sorted = res.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        setServices(sorted)
-      } catch (err) {
-        console.error(err)
-      } finally {
-        setLoading(false)
+  const fetchServices = async () => {
+    window.scrollTo(0, 0);
+    setLoading(true);
+    setError('');
+
+    try {
+      const params = {
+        page: currentPage,
+        limit: 8,
+        search: search || undefined,
+        category: activeCategory === 'Sve' ? undefined : activeCategory,
+        location: location || undefined,
+        minPrice: minPrice !== '' ? Number(minPrice) : undefined,
+        maxPrice: maxPrice !== '' ? Number(maxPrice) : undefined,
+        type: serviceType || undefined
       }
+
+      const res = await api.get('/services', { params });
+
+      setServices(res.data.services);
+      setTotalPages(res.data.pagination.totalPages);
+      setTotalServices(res.data.pagination.totalServices);
+    } catch (err) {
+      const backendMessage = err.response?.data?.message || "Greška pri dohvaćanju usluga.";
+
+      setError(backendMessage);
+      setServices([]);
+      setTotalServices(0);
+    } finally {
+      setLoading(false)
     }
+  };
+
+  useEffect(() => {
     fetchServices()
-  }, [])
+  }, [currentPage, activeCategory, serviceType])
+
 
   const categoryIcons = {
-    'Sve': '🔎',
-    'IT': '💻',
-    'Edukacija': '📚',
-    'Prijevod': '🌐',
-    'Dizajn': '🎨',
-    'Marketing': '📣',
-    'Fotografija': '📷',
-    'Kućni poslovi': '🔧',
-    'Zdravlje': '❤️',
-    'Glazba': '🎵',
-    'Pravo': '⚖️',
-    'Finance': '💰',
-    'Sport': '⚽',
+    'Sve': '🔎', 'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨', 'Marketing': '📣', 'Fotografija': '📷', 'Kućni poslovi': '🔧', 'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Finance': '💰', 'Sport': '⚽',
   }
 
-  const topCategories = ['Sve', ...Object.entries(
-    services.reduce((acc, s) => {
-      if (s.category) acc[s.category] = (acc[s.category] || 0) + 1
-      return acc
-    }, {})
-  )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([cat]) => cat)
-  ]
+  const topCategories = ['Sve', 'IT', 'Edukacija', 'Dizajn']
 
-  const filtered = services.filter(s => {
-    const matchSearch = s.title.toLowerCase().includes(search.toLowerCase()) ||
-      s.category?.toLowerCase().includes(search.toLowerCase())
-    const matchCategory = activeCategory === 'Sve' || s.category === activeCategory
-    return matchSearch && matchCategory
-  })
-
-  const visible = filtered.slice(0, visibleCount)
-  const hasMore = visibleCount < filtered.length
+  const handleSearch = (e) => {
+    e.preventDefault()
+    setCurrentPage(1)
+    fetchServices()
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -71,41 +76,76 @@ function HomePage() {
         <p className="text-slate-300 mb-10 text-xl max-w-xl mx-auto">
           Platforma za razmjenu usluga – brzo, jednostavno i sigurno.
         </p>
-        <div className="max-w-2xl mx-auto flex shadow-2xl rounded-xl overflow-hidden">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value)
-              setVisibleCount(6)
-            }}
-            placeholder="Što tražiš? (npr. prijevod, web dizajn, instrukcije...)"
-            className="flex-1 px-6 py-5 text-gray-800 focus:outline-none text-base"
-          />
-          <button
-            onClick={() => {
-              setVisibleCount(6)
-              document.getElementById('usluge').scrollIntoView({ behavior: 'smooth' })
-            }}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-5 font-bold transition text-base"
-          >
-            Pretraži
-          </button>
-        </div>
-      </div>
+        <form onSubmit={handleSearch} className="max-w-4xl mx-auto space-y-4">
+          <div className="flex shadow-2xl rounded-xl overflow-hidden bg-white">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Što tražiš? (npr. prijevod, web dizajn, instrukcije...)"
+              className="flex-1 px-6 py-5 text-gray-800 focus:outline-none text-base"
+            />
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-5 font-bold transition text-base"
+            >
+              Pretraži
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <input
+              type="text"
+              placeholder="📍 Lokacija"
+              className="px-4 py-2 rounded-lg text-gray-800 text-sm focus:outline-none"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Min KM"
+              className="px-4 py-2 rounded-lg text-gray-800 text-sm focus:outline-none"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Max KM"
+              className="px-4 py-2 rounded-lg text-gray-800 text-sm focus:outline-none"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+            <select
+              className="px-4 py-2 rounded-lg text-gray-800 text-sm focus:outline-none"
+              value={serviceType}
+              onChange={(e) => setServiceType(e.target.value)}
+            >
+              <option value="">Svi tipovi</option>
+              <option value="offering">Nudi se</option>
+              <option value="seeking">Traži se</option>
+            </select>
+          </div>
+        </form>
+
+        {error && (
+          <div className="mt-4 bg-red-500/20 text-red-200 py-2 px-4 rounded-lg inline-block text-sm border border-red-500/50">
+            ⚠️ {error}
+          </div>
+        )}
+      </div >
 
       <div className="bg-white py-10 border-b border-gray-100 shadow-sm">
         <div className="max-w-4xl mx-auto px-4">
           <h3 className="text-center text-gray-600 font-medium mb-6 text-xs uppercase tracking-widest">
             Popularne kategorije
           </h3>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {topCategories.map(cat => (
               <button
                 key={cat}
                 onClick={() => {
                   setActiveCategory(cat)
-                  setVisibleCount(9)
+                  setCurrentPage(1)
                 }}
                 className={`flex flex-col items-center justify-center py-6 px-4 rounded-2xl font-semibold transition-all duration-200 ${activeCategory === cat
                   ? 'bg-orange-500 text-white shadow-lg scale-105'
@@ -126,16 +166,16 @@ function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-slate-800">
-              {search ? `Rezultati za "${search}"` : 'Najnovije usluge'}
+              {search ? `Rezultati za "${search}"` : activeCategory !== 'Sve' ? `Kategorija: ${activeCategory}` : 'Najnovije usluge'}
             </h2>
             <span className="text-gray-500 text-sm bg-white px-3 py-1 rounded-full shadow-sm">
-              {filtered.length} usluga
+              {totalServices} usluga ukupno
             </span>
           </div>
 
           {loading ? (
-            <div className="text-center py-20 text-gray-400 font-medium">Učitavanje...</div>
-          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 text-gray-400 font-medium">Učitavanje usluga...</div>
+          ) : services.length === 0 ? (
             <div className="text-center py-20">
               <div className="text-5xl mb-4">🔍</div>
               <p className="text-gray-600 text-lg font-medium">Nema pronađenih usluga.</p>
@@ -144,7 +184,7 @@ function HomePage() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:grid-cols-4 gap-5">
-                {visible.map(service => (
+                {services.map(service => (
                   <div
                     key={service.id}
                     onClick={() => navigate(`/services/${service.id}`)}
@@ -204,8 +244,12 @@ function HomePage() {
 
                         <div className="flex items-center gap-1.5">
                           <p className="text-[10px] font-bold text-slate-600">{service.provider_name}</p>
-                          <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
-                            {service.provider_name?.charAt(0)}
+                          <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center text-[10px] font-bold text-white shadow-sm  overflow-hidden">
+                            {service.provider_avatar ? (
+                              <img src={`http://localhost:5000${service.provider_avatar}`} className="w-full h-full object-cover" alt="" />
+                            ) : (
+                              service.provider_name?.charAt(0)
+                            )}
                           </div>
                         </div>
                       </div>
@@ -214,13 +258,22 @@ function HomePage() {
                 ))}
               </div>
 
-              {hasMore && (
-                <div className="text-center mt-12">
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-4 mt-12">
                   <button
-                    onClick={() => setVisibleCount(prev => prev + 8)}
-                    className="bg-slate-800 text-white px-10 py-2 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    className="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg disabled:opacity-30"
                   >
-                    Prikaži više usluga
+                    Prethodna
+                  </button>
+                  <span className="text-slate-600 font-bold">Stranica {currentPage} od {totalPages}</span>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    className="bg-slate-800 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-700 transition shadow-lg disabled:opacity-30"
+                  >
+                    Sljedeća
                   </button>
                 </div>
               )}
@@ -233,7 +286,7 @@ function HomePage() {
         <p className="text-orange-400 font-bold text-lg mb-1">🤝 Service Exchange</p>
         <p className="text-slate-400 text-sm">© 2026. Sva prava pridržana.</p>
       </footer>
-    </div>
+    </div >
   )
 }
 

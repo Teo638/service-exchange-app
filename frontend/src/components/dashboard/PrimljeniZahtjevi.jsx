@@ -122,6 +122,16 @@ function PrimljeniZahtjevi() {
 
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
                   <div className="flex gap-2">
+
+                    {req.status !== 'rejected' && (
+                      <button
+                        onClick={() => navigate(`/chat/${req.buyer_id}`)}
+                        className="border border-orange-200 text-orange-500 px-4 py-1.5 rounded-lg text-sm hover:bg-orange-50 transition font-semibold"
+                      >
+                        💬 Pošalji poruku
+                      </button>
+                    )}
+
                     {req.status === 'pending' && (
                       <>
                         <button
@@ -145,12 +155,6 @@ function PrimljeniZahtjevi() {
                           className="border border-blue-200 text-blue-500 px-4 py-1.5 rounded-lg text-sm hover:bg-blue-50 transition font-semibold"
                         >
                           Označi kao obavljeno
-                        </button>
-                        <button
-                          onClick={() => navigate(`/chat/${req.buyer_id}`)}
-                          className="border border-orange-200 text-orange-500 px-4 py-1.5 rounded-lg text-sm hover:bg-orange-50 transition font-semibold"
-                        >
-                          💬 Pošalji poruku
                         </button>
                       </>
                     )}

@@ -4,7 +4,7 @@ const { askQuestion, answerQuestion, getQuestionsByService, deleteQuestion, mark
 const auth = require('../middlewares/authMiddleware');
 
 
-router.get('/:serviceId', getQuestionsByService);
+router.get('/:serviceId', auth, getQuestionsByService);
 
 
 router.post('/', auth, askQuestion);

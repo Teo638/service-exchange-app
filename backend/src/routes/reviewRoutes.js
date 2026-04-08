@@ -4,7 +4,7 @@ const { addReview, getUserReviews, markReviewsAsRead } = require('../controllers
 const auth = require('../middlewares/authMiddleware');
 
 
-router.get('/user/:userId', getUserReviews);
+router.get('/user/:userId', auth, getUserReviews);
 
 
 router.post('/', auth, addReview);

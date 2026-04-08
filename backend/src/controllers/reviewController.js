@@ -40,6 +40,7 @@ const addReview = async (req, res) => {
 
 const getUserReviews = async (req, res) => {
     const { userId } = req.params;
+    const loggedInUserId = req.user ? req.user.id : null;
     try {
         const reviews = await pool.query(
             `SELECT reviews.*, users.name as reviewer_name 
@@ -48,6 +49,12 @@ const getUserReviews = async (req, res) => {
              WHERE reviewee_id = $1 ORDER BY created_at DESC`,
             [userId]
         );
+        if (loggedInUserId && parseInt(userId) === loggedInUserId) {
+            await pool.query(
+                'UPDATE reviews SET is_read = true WHERE reviewee_id = $1 AND is_read = false', 
+                [loggedInUserId]
+            );
+        }
         res.json(reviews.rows);
     } catch (err) {
         console.error(err.message);

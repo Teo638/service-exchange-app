@@ -55,4 +55,18 @@ const getUserReviews = async (req, res) => {
     }
 };
 
-module.exports = { addReview, getUserReviews };
+const markReviewsAsRead = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        await pool.query(
+            'UPDATE reviews SET is_read = true WHERE reviewee_id = $1 AND is_read = false', 
+            [userId]
+        );
+        res.json({ message: "Recenzije označene kao pročitane." });
+    } catch (err) {
+        console.error("Greška u markReviewsAsRead:", err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { addReview, getUserReviews, markReviewsAsRead };

@@ -3,10 +3,11 @@ const pool = require('../config/db');
 const getDashboardStats = async (req, res) => {
     try {
         
-        const [usersCount, servicesCount, requestsCount, latestUsers] = await Promise.all([
+        const [usersCount, servicesCount, requestsCount, questionsCount, latestUsers] = await Promise.all([
             pool.query('SELECT COUNT(*) FROM users'),
             pool.query('SELECT COUNT(*) FROM services'),
             pool.query('SELECT COUNT(*) FROM requests'),
+            pool.query('SELECT COUNT(*) FROM public_questions'),
             pool.query('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC LIMIT 5')
 ]);
 
@@ -14,6 +15,7 @@ const getDashboardStats = async (req, res) => {
             totalUsers: parseInt(usersCount.rows[0].count),
             totalServices: parseInt(servicesCount.rows[0].count),
             totalRequests: parseInt(requestsCount.rows[0].count),
+            totalQuestions: parseInt(questionsCount.rows[0].count),
             latestUsers: latestUsers.rows
         });
     } catch (err) {

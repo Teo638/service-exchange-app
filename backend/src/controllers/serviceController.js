@@ -31,7 +31,7 @@ const getAllServices = async (req, res) => {
 
     try {
         let queryText = `
-            SELECT services.*, users.name as provider_name 
+            SELECT services.*, users.name as provider_name, users.avatar_url as provider_avatar
             FROM services 
             JOIN users ON services.user_id = users.id 
             WHERE 1=1`; 
@@ -51,7 +51,7 @@ const getAllServices = async (req, res) => {
 
         if (location) {
             queryParams.push(location);
-            queryText += ` AND services.location = $${queryParams.length}`;
+            queryText += ` AND services.location ILIKE $${queryParams.length}`;
         }
 
         if (minPrice) {
@@ -69,10 +69,7 @@ const getAllServices = async (req, res) => {
             queryText += ` AND services.service_type = $${queryParams.length}`;
         }
 
-        const countText = queryText.replace(
-            'SELECT services.*, users.name as provider_name',
-            'SELECT COUNT(*)'
-        );
+        const countText = `SELECT COUNT(*) FROM (${queryText}) AS total_query`;
         const totalCountResult = await pool.query(countText, queryParams);
         const totalCount = parseInt(totalCountResult.rows[0].count);
 

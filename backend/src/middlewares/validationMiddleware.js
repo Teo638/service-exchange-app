@@ -17,4 +17,23 @@ const validateService = (req, res, next) => {
     next();
 };
 
-module.exports = { validateService };
+const validateServiceQuery = (req, res, next) => {
+    const schema = Joi.object({
+        search: Joi.string().allow('', null),
+        category: Joi.string().allow('', null),
+        location: Joi.string().allow('', null),
+        minPrice: Joi.number().min(0).allow('', null),
+        maxPrice: Joi.number().min(0).allow('', null),
+        type: Joi.string().valid('offering', 'seeking', '', null),
+        page: Joi.number().min(1).allow('', null),
+        limit: Joi.number().min(1).max(100).allow('', null)
+    });
+
+    const { error } = schema.validate(req.query);
+    if (error) {
+        return res.status(400).json({ message: error.details[0].message });
+    }
+    next();
+};
+
+module.exports = { validateService, validateServiceQuery };

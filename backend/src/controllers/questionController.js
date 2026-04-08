@@ -35,7 +35,7 @@ const answerQuestion = async (req, res) => {
         if (questionData.rows[0].owner_id !== userId) return res.status(403).json({ message: "Samo vlasnik oglasa može odgovoriti." });
 
         const updatedQuestion = await pool.query(
-            'UPDATE public_questions SET answer = $1 WHERE id = $2 RETURNING *',
+            'UPDATE public_questions SET answer = $1, is_answer_read = false WHERE id = $2 RETURNING *',
             [answer, id]
         );
 
@@ -49,6 +49,7 @@ const answerQuestion = async (req, res) => {
 
 const getQuestionsByService = async (req, res) => {
     const { serviceId } = req.params;
+    const userId = req.user.id;
     try {
         const questions = await pool.query(
             `SELECT public_questions.*, users.name as user_name 
@@ -57,6 +58,21 @@ const getQuestionsByService = async (req, res) => {
              WHERE service_id = $1 ORDER BY created_at DESC`,
             [serviceId]
         );
+         if (userId) {
+            await pool.query(
+                `UPDATE public_questions SET is_read = true 
+                 FROM services WHERE public_questions.service_id = services.id 
+                 AND services.user_id = $1 AND public_questions.service_id = $2
+                 AND public_questions.is_read = false`,
+                [userId, serviceId]
+            );
+             await pool.query(
+                `UPDATE public_questions SET is_answer_read = true 
+                 WHERE user_id = $1 AND service_id = $2
+                 AND is_answer_read = false`,
+                [userId, serviceId]
+            );
+        }
         res.json(questions.rows);
     } catch (err) {
         console.error(err.message);
@@ -92,4 +108,31 @@ const deleteQuestion = async (req, res) => {
     }
 };
 
-module.exports = { askQuestion, answerQuestion, getQuestionsByService, deleteQuestion };
+const markQuestionsAsRead = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        await pool.query(
+            `UPDATE public_questions SET is_read = true 
+             FROM services WHERE public_questions.service_id = services.id 
+             AND services.user_id = $1`, [userId]
+        );
+        res.json({ message: "Pitanja označena kao pročitana." });
+    } catch (err) {
+        res.status(500).send("Server error");
+    }
+};
+
+const markAnswerAsRead = async (req, res) => {
+    const userId = req.user.id;
+    try {
+        await pool.query(
+            'UPDATE public_questions SET is_answer_read = true WHERE user_id = $1 AND is_answer_read = false', 
+            [userId]
+        );
+        res.json({ message: "Odgovori označeni kao pročitani." });
+    } catch (err) {
+        res.status(500).send("Server error");
+    }
+};
+
+module.exports = { askQuestion, answerQuestion, getQuestionsByService, deleteQuestion, markQuestionsAsRead, markAnswerAsRead };

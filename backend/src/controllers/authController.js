@@ -81,7 +81,7 @@ const loginUser = async (req, res) => {
         res.json({
             message: "Prijava uspješna!",
             accessToken, 
-            user: { id: user.id, name: user.name, email: user.email }
+            user: { id: user.id, name: user.name, email: user.email, avatar_url: user.avatar_url, is_admin: user.is_admin }
         });
 
     } catch (err) {
@@ -132,7 +132,7 @@ const googleLogin = async (req, res) => {
         res.json({
             message: "Google prijava uspješna!",
             accessToken,
-            user: { id: user.id, name: user.name, email: user.email }
+            user: { id: user.id, name: user.name, email: user.email, avatar_url: user.avatar_url, is_admin: user.is_admin }
         });
 
     } catch (err) {
@@ -192,10 +192,25 @@ const getNotifications = async (req, res) => {
             'SELECT COUNT(*)::int FROM requests WHERE buyer_id = $1 AND is_read_by_buyer = false',
             [userId]
         );
+        const questionCount = await pool.query(
+            `SELECT COUNT(*)::int FROM public_questions q
+             JOIN services s ON q.service_id = s.id
+             WHERE s.user_id = $1 AND q.is_read = false`, [userId]
+        );
+        const reviewCount = await pool.query(
+            'SELECT COUNT(*)::int FROM reviews WHERE reviewee_id = $1 AND is_read = false', [userId]
+        );
+        const answerCount = await pool.query(
+            'SELECT COUNT(*)::int FROM public_questions WHERE user_id = $1 AND is_answer_read = false', 
+            [userId]
+        );
         res.json({
             messages: messageCount.rows[0].count,
             unreadReceived: receivedCount.rows[0].count,
-            unreadSent: sentCount.rows[0].count
+            unreadSent: sentCount.rows[0].count,
+            unreadQuestions: questionCount.rows[0].count, 
+            unreadReviews: reviewCount.rows[0].count,
+            unreadAnswers: answerCount.rows[0].count
         });
     } catch (err) {
         console.error("Greška pri brojanju obavijesti:", err.message);

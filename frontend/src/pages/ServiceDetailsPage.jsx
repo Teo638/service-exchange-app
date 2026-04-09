@@ -11,7 +11,7 @@ const categoryIcons = {
 
 function ServiceDetailsPage() {
   const { id } = useParams()
-  const { user } = useAuth()
+  const { user, fetchNotifications } = useAuth()
   const navigate = useNavigate()
 
   const [service, setService] = useState(null)
@@ -37,6 +37,9 @@ function ServiceDetailsPage() {
         setReviews(reviewsRes.data)
         const questionsRes = await api.get(`/questions/${id}`)
         setQuestions(questionsRes.data)
+        if (user) {
+          fetchNotifications();
+        }
       } catch (err) {
         console.error(err)
       } finally {

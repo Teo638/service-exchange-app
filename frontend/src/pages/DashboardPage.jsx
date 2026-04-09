@@ -33,6 +33,11 @@ function DashboardPage() {
                   }`}
               >
                 {tab.label}
+                {tab.id === 'ponude' && (notifications.unreadQuestions + notifications.unreadReviews) > 0 && (
+                  <span className="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
+                    {notifications.unreadQuestions + notifications.unreadReviews}
+                  </span>
+                )}
                 {tab.id === 'primljeni' && notifications.unreadReceived > 0 && (
                   <span className="bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                     {notifications.unreadReceived}

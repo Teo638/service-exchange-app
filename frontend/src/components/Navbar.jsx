@@ -25,9 +25,9 @@ function Navbar() {
             <>
               <Link to="/dashboard" className="text-gray-600 hover:text-orange-600 transition  relative">
                 Dashboard
-                {(notifications.unreadReceived + notifications.unreadSent) > 0 && (
+                {(notifications.unreadReceived + notifications.unreadSent + notifications.unreadQuestions + notifications.unreadReviews) > 0 && (
                   <span className="absolute -top-3 -right-3 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                    {notifications.unreadReceived + notifications.unreadSent}
+                    {notifications.unreadReceived + notifications.unreadSent + notifications.unreadQuestions + notifications.unreadReviews}
                   </span>
                 )}
               </Link>

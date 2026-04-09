@@ -220,34 +220,47 @@ function MojePonude() {
         </div>
       ) : (
         <div className="space-y-4">
-          {services.map(service => (
-            <div key={service.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                {service.image_url ? (
-                  <img src={`http://localhost:5000${service.image_url}`} alt={service.title} className="w-14 h-14 object-cover rounded-xl" />
-                ) : (
-                  <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">
-                    📋
+          {services.map(service => {
+            const isNewActivity = (service.unread_questions_count > 0 || service.unread_reviews_count > 0);
+
+            return (
+              <div
+                key={service.id}
+                className={`rounded-2xl shadow-sm border p-5 flex items-center justify-between transition-all ${isNewActivity ? 'bg-blue-50/50 border-blue-200 ring-1 ring-blue-100' : 'bg-white border-gray-100'
+                  }`}
+              >
+                <div className="flex items-center gap-4">
+                  {service.image_url ? (
+                    <img src={`http://localhost:5000${service.image_url}`} alt={service.title} className="w-14 h-14 object-cover rounded-xl" />
+                  ) : (
+                    <div className="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-2xl">
+                      📋
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-slate-800">{service.title}</p>
+                    {isNewActivity && (
+                      <span className="bg-blue-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide animate-pulse">
+                        NOVO
+                      </span>
+                    )}
+                    <p className="text-sm text-gray-500 mt-0.5">{service.category} · {service.price} KM   {service.location && ` · ${service.location}`}</p>
                   </div>
-                )}
-                <div>
-                  <p className="font-semibold text-slate-800">{service.title}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{service.category} · {service.price} KM   {service.location && ` · ${service.location}`}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(service)} className="border border-gray-200 text-gray-600 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition">
+                    Uredi
+                  </button>
+                  <button onClick={() => handleDelete(service.id)} className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-50 transition">
+                    Obriši
+                  </button>
+                  <button onClick={() => navigate(`/services/${service.id}`)} className="px-4 py-2 border border-orange-500 text-orange-500 rounded-xl text-sm font-semibold hover:bg-orange-50 transition">
+                    Pogledaj oglas
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(service)} className="border border-gray-200 text-gray-600 px-4 py-1.5 rounded-lg text-sm hover:bg-gray-50 transition">
-                  Uredi
-                </button>
-                <button onClick={() => handleDelete(service.id)} className="border border-red-200 text-red-500 px-4 py-1.5 rounded-lg text-sm hover:bg-red-50 transition">
-                  Obriši
-                </button>
-                <button onClick={() => navigate(`/services/${service.id}`)} className="px-4 py-2 border border-orange-500 text-orange-500 rounded-xl text-sm font-semibold hover:bg-orange-50 transition">
-                  Pogledaj oglas
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

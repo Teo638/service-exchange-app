@@ -6,7 +6,7 @@ import api from '../api'
 const categoryIcons = {
   'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨',
   'Marketing': '📣', 'Fotografija': '📷', 'Kućni poslovi': '🔧',
-  'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Finance': '💰', 'Sport': '⚽',
+  'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Financije': '💰', 'Sport': '⚽',
 }
 
 function ServiceDetailsPage() {
@@ -33,7 +33,7 @@ function ServiceDetailsPage() {
       try {
         const res = await api.get(`/services/${id}`)
         setService(res.data)
-        const reviewsRes = await api.get(`/reviews/user/${res.data.user_id}`)
+        const reviewsRes = await api.get(`/reviews/service/${id}`)
         setReviews(reviewsRes.data)
         const questionsRes = await api.get(`/questions/${id}`)
         setQuestions(questionsRes.data)
@@ -151,30 +151,22 @@ function ServiceDetailsPage() {
     <div className="min-h-screen bg-gray-100">
 
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-5xl mx-auto px-4 py-3">
+        <div className="max-w-5xl mx-auto px-4 py-2">
           <button onClick={() => navigate('/')} className="text-gray-500 hover:text-orange-500 text-sm transition">
             ← Natrag na pretragu
           </button>
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-5">
+      <div className="max-w-5xl mx-auto px-4 pt-2 pb-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-          <div className="lg:col-span-2 space-y-6">
-            {user?.is_admin && (
-              <button
-                onClick={handleDeleteService}
-                className="bg-red-600 text-white px-3 py-1 rounded text-xs mb-2 hover:bg-red-700 transition"
-              >
-                OBRIŠI OGLAS (ADMIN)
-              </button>
-            )}
+          <div className="lg:col-span-2 space-y-4">
             {service.image_url ? (
               <img
                 src={`http://localhost:5000${service.image_url}`}
                 alt={service.title}
-                className="w-full h-80 object-cover rounded-2xl shadow-sm border border-gray-100"
+                className="w-full h-72 object-cover rounded-2xl shadow-sm border border-gray-100"
               />
             ) : (
               <div className="w-full h-80 rounded-2xl shadow-sm border border-gray-100 bg-gray-200 flex items-center justify-center">
@@ -185,16 +177,28 @@ function ServiceDetailsPage() {
               </div>
             )}
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              {service.category && (
-                <span className="text-xs bg-orange-50 text-orange-500 px-3 py-1.5 rounded-full font-semibold">
-                  {categoryIcons[service.category] || '🛠️'} {service.category}
-                </span>
-              )}
-              <h1 className="text-3xl font-bold text-slate-900 mt-4 mb-3  leading-tight">
-                {service.title}
-              </h1>
-              <div className="flex items-center gap-4 text-gray-400 text-sm mb-3 pb-3 border-b border-gray-50">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <div className="flex justify-between items-start gap-4 mb-4">
+                <h1 className="text-3xl font-bold text-slate-900 mt-4 mb-3  leading-tight">
+                  {service.title}
+                </h1>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  {service.category && (
+                    <span className="text-[10px] bg-orange-50 text-orange-500 px-2.5 py-1 rounded-full font-bold uppercase tracking-wide border border-orange-100">
+                      {categoryIcons[service.category] || '🛠️'} {service.category}
+                    </span>
+                  )}
+                  {user?.is_admin && (
+                    <button
+                      onClick={handleDeleteService}
+                      className="text-[10px] font-bold text-red-500 hover:text-red-700 border border-red-100 px-3 py-0.5 rounded bg-red-50 transition"
+                    >
+                      OBRIŠI OGLAS (ADMIN)
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-gray-400 text-sm mb-2 pb-3 border-b border-gray-50">
                 <span>📍 {service.location || 'Lokacija nije navedena'}</span>
                 <span>📅 {new Date(service.created_at).toLocaleDateString('hr-HR')}</span>
                 {service.service_type && (
@@ -206,8 +210,8 @@ function ServiceDetailsPage() {
               </div>
 
 
-              <div className="border-t border-gray-100 pt-3 mt-4">
-                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              <div className="pt-0">
+                <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Opis usluge
                 </h2>
                 <p className="text-gray-700 leading-relaxed text-base whitespace-pre-line">
@@ -216,110 +220,134 @@ function ServiceDetailsPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                Pitanja i odgovori
-                <span className="text-sm font-normal text-gray-400">({questions.length})</span>
-              </h2>
+            {user && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                  Pitanja i odgovori
+                  <span className="text-sm font-normal text-gray-400">({questions.length})</span>
+                </h2>
 
-              {!isOwner && user && (
-                <form onSubmit={handlePostQuestion} className="mb-8">
-                  <textarea
-                    className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none text-sm bg-gray-50 resize-none transition-all"
-                    placeholder="Pitajte prodavača nešto o ovoj usluzi..."
-                    value={newQuestion}
-                    onChange={(e) => setNewQuestion(e.target.value)}
-                    rows="2"
-                  />
-                  <button type="submit" className="mt-2 bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-700 transition shadow-sw">
-                    Postavi pitanje
-                  </button>
-                </form>
-              )}
+                {!isOwner && user && (
+                  <form onSubmit={handlePostQuestion} className="mb-8">
+                    <textarea
+                      className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 outline-none text-sm bg-gray-50 resize-none transition-all"
+                      placeholder="Pitajte prodavača nešto o ovoj usluzi..."
+                      value={newQuestion}
+                      onChange={(e) => setNewQuestion(e.target.value)}
+                      rows="2"
+                    />
+                    <button type="submit" className="mt-2 bg-slate-800 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-700 transition shadow-sw">
+                      Postavi pitanje
+                    </button>
+                  </form>
+                )}
 
-              <div className="space-y-4">
-                {questions.length === 0 ? (
-                  <p className="text-center py-3 bg-gray-50 rounded-2xl text-gray-400 italic text-sm">Još nema pitanja za ovu uslugu.</p>
-                ) : (
-                  questions.map((q) => (
-                    <div key={q.id} className="bg-gray-50 rounded-xl p-5 border border-gray-100  relative group">
+                <div className="space-y-4">
+                  {questions.length === 0 ? (
+                    <p className="text-center py-3 bg-gray-50 rounded-2xl text-gray-400 italic text-sm">Još nema pitanja za ovu uslugu.</p>
+                  ) : (
+                    questions.map((q) => (
+                      <div key={q.id} className="bg-gray-50 rounded-xl p-5 border border-gray-100  relative group">
 
-                      {(user?.id === q.user_id || isOwner || user?.is_admin) && (
-                        <button
-                          onClick={() => handleDeleteQuestion(q.id)}
-                          className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors p-1"
-                          title="Obriši pitanje"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      )}
+                        {(user?.id === q.user_id || isOwner || user?.is_admin) && (
+                          <button
+                            onClick={() => handleDeleteQuestion(q.id)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-red-600 transition-colors p-1"
+                            title="Obriši pitanje"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        )}
 
-                      <div className="flex gap-3">
-                        <span className="font-black text-orange-500 text-lg">P:</span>
-                        <div className="flex-1">
-                          <p className="text-slate-800 font-medium">{q.question}</p>
-                          <p className="text-[10px] text-gray-400 uppercase mt-1">
-                            {new Date(q.created_at).toLocaleDateString('hr-HR')}
-                          </p>
-                        </div>
-                      </div>
 
-                      {q.answer ? (
-                        <div className="mt-4 ml-6 pl-4 border-l-2 border-orange-200 flex gap-3">
-                          <span className="font-black text-green-600">O:</span>
-                          <p className="text-slate-600 text-sm italic">{q.answer}</p>
-                        </div>
-                      ) : (
-                        isOwner && (
-                          <div className="mt-4 ml-8">
-                            <input
-                              type="text"
-                              className="w-full border-b border-gray-300 bg-transparent py-2 focus:border-orange-500 outline-none text-sm"
-                              placeholder="Napišite odgovor..."
-                              value={answerTexts[q.id] || ''}
-                              onChange={(e) => setAnswerTexts({ ...answerTexts, [q.id]: e.target.value })}
-                            />
-                            <button onClick={() => handlePostAnswer(q.id)} className="mt-2 text-orange-600 font-bold text-xs hover:text-orange-800 transition">
-                              POŠALJI ODGOVOR
-                            </button>
+
+                        <div className="flex gap-3">
+                          <div className="w-9 h-9 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
+                            {q.user_name?.charAt(0).toUpperCase()}
                           </div>
-                        )
-                      )}
+                          <div className="flex-1">
+                            <p className="font-bold text-slate-900 text-sm mb-0.5">{q.user_name}</p>
+                            <p className="text-slate-800 text-sm">{q.question}</p>
+                            <p className="text-[10px] text-gray-400 uppercase mt-1">
+                              {new Date(q.created_at).toLocaleDateString('hr-HR')}
+                            </p>
+                          </div>
+                        </div>
+
+                        {q.answer ? (
+                          <div className="mt-4 ml-8 pl-4 border-l-2 border-orange-200 flex gap-3">
+                            <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0">
+                              {service.provider_name?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1">
+                              <p className="font-bold text-slate-800 text-xs mb-0.5">{service.provider_name}</p>
+                              <p className="text-slate-600 text-sm italic">{q.answer}</p>
+                            </div>
+                          </div>
+
+                        ) : (
+                          isOwner && (
+                            <div className="mt-4 ml-8">
+                              <input
+                                type="text"
+                                className="w-full border-b border-gray-300 bg-transparent py-2 focus:border-orange-500 outline-none text-sm"
+                                placeholder="Napišite odgovor..."
+                                value={answerTexts[q.id] || ''}
+                                onChange={(e) => setAnswerTexts({ ...answerTexts, [q.id]: e.target.value })}
+                              />
+                              <button onClick={() => handlePostAnswer(q.id)} className="mt-2 text-orange-600 font-bold text-xs hover:text-orange-800 transition">
+                                POŠALJI ODGOVOR
+                              </button>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
+            {user && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-bold text-slate-800 mb-6 uppercase tracking-tight">Recenzije korisnika ({reviews.length})</h2>
+                  {service.avg_rating && (
+                    <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1 rounded-lg">
+                      <span className="text-yellow-400 text-lg">★</span>
+                      <span className="font-bold text-orange-600">{Number(service.avg_rating).toFixed(1)}</span>
                     </div>
-                  ))
+                  )}
+                </div>
+
+                {reviews.length === 0 ? (
+                  <p className="text-gray-400 italic">Još nema recenzija za ovog korisnika.</p>
+                ) : (
+                  <div className="space-y-6">
+                    {reviews.map((rev) => (
+                      <div key={rev.id} className="group">
+                        <div className="flex items-center mb-2 gap-3">
+                          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-orange-500 font-bold text-sm">
+                            {rev.reviewer_name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
+                            <div className="flex text-yellow-400 text-xs">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h2 className="text-xl font-bold text-slate-800 mb-6 uppercase tracking-tight">Recenzije korisnika ({reviews.length})</h2>
-              {reviews.length === 0 ? (
-                <p className="text-gray-400 italic">Još nema recenzija za ovog korisnika.</p>
-              ) : (
-                <div className="space-y-6">
-                  {reviews.map((rev) => (
-                    <div key={rev.id} className="group">
-                      <div className="flex items-center mb-2 gap-3">
-                        <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-orange-500 font-bold text-sm">
-                          {rev.reviewer_name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
-                          <div className="flex text-yellow-400 text-xs">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-gray-600 text-sm italic">"{rev.comment}"</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -348,6 +376,7 @@ function ServiceDetailsPage() {
                       <div className="flex gap-2">
                         <input
                           type="date"
+                          min={new Date().toISOString().split('T')[0]}
                           className="w-full border border-gray-100 bg-gray-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400 transition-all"
                           value={preferredDate}
                           onChange={(e) => setPreferredDate(e.target.value)}
@@ -398,12 +427,9 @@ function ServiceDetailsPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
-                Ponuđač usluge
-              </h3>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white overflow-hidden border border-gray-100 shadow-sm">
+                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-lg font-bold text-white overflow-hidden border border-gray-100 shadow-sm">
                   {service.provider_avatar ? (
                     <img
                       src={`http://localhost:5000${service.provider_avatar}`}
@@ -418,10 +444,15 @@ function ServiceDetailsPage() {
               </div>
               <button
                 onClick={() => navigate(`/profile/${service.user_id}`)}
-                className="w-full mt-5 border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
+                className="w-full mt-4 border border-gray-200 text-gray-600 py-2 rounded-xl text-sm hover:bg-gray-50 transition font-medium"
               >
                 Pogledaj profil
               </button>
+              {!user && (
+                <p className="mt-4 text-center text-xs text-gray-500 leading-relaxed">
+                  <button onClick={() => navigate('/login')} className="text-orange-500 font-bold hover:underline">Prijavite se</button> da biste vidjeli pitanja i recenzije korisnika.
+                </p>
+              )}
             </div>
           </div>
         </div>

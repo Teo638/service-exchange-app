@@ -31,7 +31,10 @@ const getAllServices = async (req, res) => {
 
     try {
         let queryText = `
-            SELECT services.*, users.name as provider_name, users.avatar_url as provider_avatar
+            SELECT services.*, users.name as provider_name, users.avatar_url as provider_avatar,
+            (SELECT COUNT(*)::int FROM public_questions WHERE service_id = services.id AND is_read = false) as unread_questions_count,
+            (SELECT COUNT(*)::int FROM reviews WHERE service_id = services.id AND is_read = false) as unread_reviews_count,
+            (SELECT AVG(rating)::float FROM reviews WHERE service_id = services.id) as avg_rating
             FROM services 
             JOIN users ON services.user_id = users.id 
             WHERE 1=1`; 
@@ -101,7 +104,7 @@ const getServiceById = async (req, res) => {
         await pool.query('UPDATE services SET views_count = views_count + 1 WHERE id = $1', [id]);
 
         const service = await pool.query(
-            'SELECT services.*, users.name as provider_name, users.email as provider_email, users.avatar_url as provider_avatar FROM services JOIN users ON services.user_id = users.id WHERE services.id = $1',
+            'SELECT services.*, users.name as provider_name, users.email as provider_email, users.avatar_url as provider_avatar, (SELECT AVG(rating) FROM reviews WHERE service_id = services.id) as avg_rating FROM services JOIN users ON services.user_id = users.id WHERE services.id = $1',
             [id]
         );
 

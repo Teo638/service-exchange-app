@@ -261,4 +261,37 @@ const updateProfile = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile };
+const deleteMyAccount = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        const servicesResult = await pool.query('SELECT image_url FROM services WHERE user_id = $1', [userId]);
+        servicesResult.rows.forEach(service => {
+            if (service.image_url) {
+                const imagePath = path.join(__dirname, '../../', service.image_url);
+                if (fs.existsSync(imagePath)) fs.unlinkSync(imagePath);
+            }
+        });
+
+        const userResult = await pool.query('SELECT avatar_url FROM users WHERE id = $1', [userId]);
+        const avatarUrl = userResult.rows[0]?.avatar_url;
+        if (avatarUrl) {
+            const avatarPath = path.join(__dirname, '../../', avatarUrl);
+            if (fs.existsSync(avatarPath)) fs.unlinkSync(avatarPath);
+        }
+
+   
+        await pool.query('DELETE FROM users WHERE id = $1', [userId]);
+
+        
+        res.clearCookie('refreshToken');
+
+        res.json({ message: "Vaš račun i svi povezani podaci su trajno obrisani." });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
+
+module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile, deleteMyAccount };

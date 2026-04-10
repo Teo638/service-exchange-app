@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import api from '../api'
 
 const categoryIcons = {
   'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨',
   'Marketing': '📣', 'Fotografija': '📷', 'Kućni poslovi': '🔧',
-  'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Finance': '💰', 'Sport': '⚽',
+  'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Financije': '💰', 'Sport': '⚽',
 }
 
 function ProfilePage() {
@@ -15,6 +16,7 @@ function ProfilePage() {
   const [services, setServices] = useState([])
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -25,8 +27,6 @@ function ProfilePage() {
         const allServices = servicesRes.data.services || [];
         const userServices = allServices.filter(s => s.user_id === parseInt(id));
         setServices(userServices);
-        const reviewsRes = await api.get(`/reviews/user/${id}`)
-        setReviews(reviewsRes.data);
         if (userServices.length > 0) {
           const detailRes = await api.get(`/services/${userServices[0].id}`)
           setProfile({
@@ -34,6 +34,10 @@ function ProfilePage() {
             email: detailRes.data.provider_email,
             avatar: userServices[0].provider_avatar
           })
+        }
+        if (user) {
+          const reviewsRes = await api.get(`/reviews/user/${id}`)
+          setReviews(reviewsRes.data);
         }
       } catch (err) {
         console.error(err)
@@ -86,15 +90,17 @@ function ProfilePage() {
               <h1 className="text-xl font-bold text-slate-900">{profile.name}</h1>
               <p className="text-gray-400 text-sm mt-1">Član platforme</p>
 
-              <div className="flex items-center justify-center gap-1 mt-2">
-                <span className="text-yellow-400">★</span>
-                <span className="font-bold text-slate-700">
-                  {reviews.length > 0
-                    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
-                    : 0}
-                </span>
-                <span className="text-gray-400 text-sm">({reviews.length} recenzija)</span>
-              </div>
+              {user && (
+                <div className="flex items-center justify-center gap-1 mt-2">
+                  <span className="text-yellow-400">★</span>
+                  <span className="font-bold text-slate-700">
+                    {reviews.length > 0
+                      ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
+                      : 0}
+                  </span>
+                  <span className="text-gray-400 text-sm">({reviews.length} recenzija)</span>
+                </div>
+              )}
 
               <div className="border-t border-gray-100 mt-4 pt-4 text-left space-y-3">
                 <div className="flex items-center gap-2">
@@ -109,44 +115,55 @@ function ProfilePage() {
                   </svg>
                   <span className="text-sm text-gray-600">{services.length} objavljenih usluga</span>
                 </div>
+                {!user && (
+                  <p className="mt-4 text-xs text-gray-500 pt-4 border-t border-gray-100">
+                    <span
+                      className="text-orange-500 font-bold cursor-pointer hover:underline"
+                      onClick={() => navigate('/login')}
+                    >
+                      Prijavite se
+                    </span> da biste vidjeli recenzije korisnika.
+                  </p>
+                )}
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">
-                Recenzije ({reviews.length})
-              </h2>
+            {user && (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 className="text-lg font-bold text-slate-800 mb-4">
+                  Recenzije ({reviews.length})
+                </h2>
 
-              {reviews.length === 0 ? (
-                <div className="text-center py-4 text-gray-400 italic text-sm">
-                  Korisnik još nema ocjena.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {reviews.map(rev => (
-                    <div key={rev.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <div>
-                          <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
-                          <div className="flex text-yellow-400 text-[10px]">
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
-                            ))}
+                {reviews.length === 0 ? (
+                  <div className="text-center py-4 text-gray-400 italic text-sm">
+                    Korisnik još nema ocjena.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {reviews.map(rev => (
+                      <div key={rev.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
+                        <div className="flex justify-between items-start mb-1">
+                          <div>
+                            <p className="font-bold text-slate-800 text-sm">{rev.reviewer_name}</p>
+                            <div className="flex text-yellow-400 text-[10px]">
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i}>{i < rev.rating ? '★' : '☆'}</span>
+                              ))}
+                            </div>
                           </div>
+                          <span className="text-[9px] text-gray-400 font-bold">
+                            {new Date(rev.created_at).toLocaleDateString('hr-HR')}
+                          </span>
                         </div>
-                        <span className="text-[9px] text-gray-400 font-bold">
-                          {new Date(rev.created_at).toLocaleDateString('hr-HR')}
-                        </span>
+                        <p className="text-gray-600 text-xs italic">"{rev.comment}"</p>
                       </div>
-                      <p className="text-gray-600 text-xs italic">"{rev.comment}"</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           </div>
-
 
           <div className="lg:col-span-2">
             <h2 className="text-lg font-bold text-slate-800 mb-4">
@@ -176,7 +193,15 @@ function ProfilePage() {
                         <p className="font-semibold text-slate-800 mt-2">{service.title}</p>
                         <p className="text-sm text-gray-400 mt-1 line-clamp-1">{service.description}</p>
                       </div>
-                      <p className="text-orange-500 font-bold text-lg ml-4 whitespace-nowrap">{service.price} KM</p>
+                      <div className="text-right ml-4">
+                        <p className="text-orange-500 font-bold text-lg ml-4 whitespace-nowrap">{service.price} KM</p>
+                        {user && service.avg_rating && (
+                          <div className="flex items-center justify-end gap-1 mt-1">
+                            <span className="text-yellow-400 text-xs">★</span>
+                            <span className="text-xs font-bold text-gray-500">{Number(service.avg_rating).toFixed(1)}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

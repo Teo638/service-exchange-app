@@ -56,7 +56,7 @@ function HomePage() {
 
 
   const categoryIcons = {
-    'Sve': '🔎', 'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨', 'Marketing': '📣', 'Fotografija': '📷', 'Kućni poslovi': '🔧', 'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Finance': '💰', 'Sport': '⚽',
+    'Sve': '🔎', 'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨', 'Marketing': '📣', 'Fotografija': '📷', 'Kućni poslovi': '🔧', 'Zdravlje': '❤️', 'Glazba': '🎵', 'Pravo': '⚖️', 'Financije': '💰', 'Sport': '⚽',
   }
 
   const topCategories = ['Sve', 'IT', 'Edukacija', 'Dizajn']

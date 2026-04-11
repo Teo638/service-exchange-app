@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
+import { GoogleLogin } from '@react-oauth/google'
 
 function RegisterPage() {
   const [name, setName] = useState('')
@@ -11,6 +12,18 @@ function RegisterPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [confirmPassword, setConfirmPassword] = useState('')
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await api.post('/auth/google', {
+        idToken: credentialResponse.credential
+      })
+      login(res.data.user, res.data.accessToken)
+      navigate('/')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Google prijava nije uspjela.')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -88,6 +101,13 @@ function RegisterPage() {
             Registriraj se
           </button>
         </form>
+        <div className="mt-4 flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google prijava nije uspjela.')}
+            useOneTap
+          />
+        </div>
         <p className="text-center text-sm text-gray-500 mt-6">
           Već imaš račun?{' '}
           <Link to="/login" className="text-orange-500 hover:underline font-medium">

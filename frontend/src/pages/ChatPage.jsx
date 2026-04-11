@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
 
 function ChatPage() {
   const { receiverId: paramReceiverId } = useParams()
+  const navigate = useNavigate()
   const { user, fetchNotifications } = useAuth()
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState('')
@@ -145,7 +146,7 @@ function ChatPage() {
       <div className="flex-1 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
         {activeChat ? (
           <>
-            <div className="p-5 border-b border-gray-50 flex items-center gap-3">
+            <div onClick={() => navigate(`/profile/${ activeChat }`)} className="p-5 border-b border-gray-50 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition">
               <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 uppercase text-sm">
                 {contacts.find(c => c.id.toString() === activeChat)?.name.charAt(0)}
               </div>

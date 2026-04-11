@@ -21,32 +21,33 @@ function ProfilePage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchData = async () => {
-      try {
+     try {
         setLoading(true);
+        const userRes = await api.get(`/auth/user/${id}`)
+        setProfile({
+          name: userRes.data.name,
+          email: userRes.data.email,
+          avatar: userRes.data.avatar_url
+        })
+
         const servicesRes = await api.get('/services')
         const allServices = servicesRes.data.services || [];
         const userServices = allServices.filter(s => s.user_id === parseInt(id));
         setServices(userServices);
-        if (userServices.length > 0) {
-          const detailRes = await api.get(`/services/${userServices[0].id}`)
-          setProfile({
-            name: userServices[0].provider_name,
-            email: detailRes.data.provider_email,
-            avatar: userServices[0].provider_avatar
-          })
-        }
+
         if (user) {
           const reviewsRes = await api.get(`/reviews/user/${id}`)
           setReviews(reviewsRes.data);
         }
       } catch (err) {
-        console.error(err)
+         console.error("Greška pri učitavanju profila:", err)
+        setProfile(null)
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [id])
+  }, [id, user])
 
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">

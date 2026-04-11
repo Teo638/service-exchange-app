@@ -46,6 +46,25 @@ function EditProfile() {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Jeste li sigurni da želite trajno obrisati svoj račun? Svi vaši oglasi, poruke i podaci bit će trajno uklonjeni."
+    )
+
+    if (!confirmDelete) return
+
+    setLoading(true)
+    try {
+      await api.delete('/auth/account')
+      alert("Vaš račun je uspješno obrisan.")
+      logout()
+      navigate('/')
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Greška pri brisanju računa.')
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
       <h2 className="text-2xl font-bold mb-6 text-slate-800">Uredi profil</h2>
@@ -91,6 +110,14 @@ function EditProfile() {
           className="w-full bg-slate-900 text-white py-2 rounded-lg font-bold hover:bg-slate-800 transition disabled:opacity-50"
         >
           {loading ? 'Spremanje...' : 'Spremi promjene'}
+        </button>
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          disabled={loading}
+          className="w-full bg-red-600 text-white py-2 rounded-lg font-bold hover:bg-red-700 transition disabled:opacity-50 mt-2"
+        >
+          {loading ? 'Brisanje...' : 'Obriši račun'}
         </button>
       </form>
     </div>

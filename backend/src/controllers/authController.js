@@ -261,6 +261,25 @@ const updateProfile = async (req, res) => {
     }
 };
 
+const getUserPublicProfile = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const userResult = await pool.query(
+            'SELECT id, name, email, avatar_url, created_at FROM users WHERE id = $1',
+            [id]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: "Korisnik nije pronađen." });
+        }
+
+        res.json(userResult.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send("Server error");
+    }
+};
+
 const deleteMyAccount = async (req, res) => {
     const userId = req.user.id;
 
@@ -294,4 +313,6 @@ const deleteMyAccount = async (req, res) => {
 };
 
 
-module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile, deleteMyAccount };
+
+
+module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile, getUserPublicProfile, deleteMyAccount};

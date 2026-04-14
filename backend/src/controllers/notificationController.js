@@ -1,21 +1,58 @@
-const getNotificationCount = async (req, res) => {
+const pool = require('../config/db');
+
+const getNotifications = async (req, res) => {
     const userId = req.user.id;
     try {
-        
-        const msgCount = await pool.query('SELECT COUNT(*) FROM messages WHERE receiver_id = $1 AND is_read = false', [userId]);
-         
-        const reqSellerCount = await pool.query(
-            'SELECT COUNT(*) FROM requests r JOIN services s ON r.service_id = s.id WHERE s.user_id = $1 AND r.is_read_by_seller = false', 
-            [userId]
-        );
-
-        const reqBuyerCount = await pool.query('SELECT COUNT(*) FROM requests WHERE buyer_id = $1 AND is_read_by_buyer = false', [userId]);
+        const [
+            messageCount,
+            receivedCount,
+            sentCount,
+            questionCount,
+            reviewCount,
+            answerCount
+        ] = await Promise.all([
+            pool.query(
+                'SELECT COUNT(*)::int FROM messages WHERE receiver_id = $1 AND is_read = false',
+                [userId]
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int FROM requests 
+                 JOIN services ON requests.service_id = services.id
+                 WHERE services.user_id = $1 AND requests.is_read_by_seller = false`,
+                [userId]
+            ),
+            pool.query(
+                'SELECT COUNT(*)::int FROM requests WHERE buyer_id = $1 AND is_read_by_buyer = false',
+                [userId]
+            ),
+            pool.query(
+                `SELECT COUNT(*)::int FROM public_questions q
+                 JOIN services s ON q.service_id = s.id
+                 WHERE s.user_id = $1 AND q.is_read = false`,
+                [userId]
+            ),
+            pool.query(
+                'SELECT COUNT(*)::int FROM reviews WHERE reviewee_id = $1 AND is_read = false',
+                [userId]
+            ),
+            pool.query(
+                'SELECT COUNT(*)::int FROM public_questions WHERE user_id = $1 AND is_answer_read = false',
+                [userId]
+            )
+        ]);
 
         res.json({
-            messages: parseInt(msgCount.rows[0].count),
-            requests: parseInt(reqSellerCount.rows[0].count) + parseInt(reqBuyerCount.rows[0].count)
+            messages: messageCount.rows[0].count,
+            unreadReceived: receivedCount.rows[0].count,
+            unreadSent: sentCount.rows[0].count,
+            unreadQuestions: questionCount.rows[0].count,
+            unreadReviews: reviewCount.rows[0].count,
+            unreadAnswers: answerCount.rows[0].count
         });
     } catch (err) {
-        res.status(500).send("Server error");
+        console.error("Greška pri brojanju obavijesti:", err.message);
+        res.status(500).json({ messages: 0, unreadReceived: 0, unreadSent: 0 });
     }
 };
+
+module.exports = { getNotifications };

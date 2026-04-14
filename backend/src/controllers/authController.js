@@ -149,10 +149,17 @@ const handleRefreshToken = async (req, res) => {
         const result = await pool.query('SELECT * FROM refresh_tokens WHERE token = $1', [refreshToken]);
         if (result.rows.length === 0) return res.status(403).json({ message: "Neispravan token." });
 
-        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, decoded) => {
+        jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
             if (err) return res.status(403).json({ message: "Token je istekao." });
+            const userResult = await pool.query(
+                'SELECT id, is_admin FROM users WHERE id = $1',
+                [decoded.id]
+            );
+            if (userResult.rows.length === 0) {
+                return res.status(403).json({ message: "Korisnik nije pronađen." });
+            }
             
-            const accessToken = generateAccessToken({ id: decoded.id });
+            const accessToken = generateAccessToken(userResult.rows[0]);
             res.json({ accessToken });
         });
     } catch (err) {
@@ -175,48 +182,6 @@ const logoutUser = async (req, res) => {
     }
 };
 
-const getNotifications = async (req, res) => {
-    const userId = req.user.id;
-    try {
-        const messageCount = await pool.query(
-            'SELECT COUNT(*)::int FROM messages WHERE receiver_id = $1 AND is_read = false',
-            [userId]
-        );
-        const receivedCount = await pool.query(
-            `SELECT COUNT(*)::int FROM requests 
-             JOIN services ON requests.service_id = services.id
-             WHERE services.user_id = $1 AND requests.is_read_by_seller = false`,
-            [userId]
-        );
-        const sentCount = await pool.query(
-            'SELECT COUNT(*)::int FROM requests WHERE buyer_id = $1 AND is_read_by_buyer = false',
-            [userId]
-        );
-        const questionCount = await pool.query(
-            `SELECT COUNT(*)::int FROM public_questions q
-             JOIN services s ON q.service_id = s.id
-             WHERE s.user_id = $1 AND q.is_read = false`, [userId]
-        );
-        const reviewCount = await pool.query(
-            'SELECT COUNT(*)::int FROM reviews WHERE reviewee_id = $1 AND is_read = false', [userId]
-        );
-        const answerCount = await pool.query(
-            'SELECT COUNT(*)::int FROM public_questions WHERE user_id = $1 AND is_answer_read = false', 
-            [userId]
-        );
-        res.json({
-            messages: messageCount.rows[0].count,
-            unreadReceived: receivedCount.rows[0].count,
-            unreadSent: sentCount.rows[0].count,
-            unreadQuestions: questionCount.rows[0].count, 
-            unreadReviews: reviewCount.rows[0].count,
-            unreadAnswers: answerCount.rows[0].count
-        });
-    } catch (err) {
-        console.error("Greška pri brojanju obavijesti:", err.message);
-        res.status(500).json({ messages: 0, unreadReceived: 0, unreadSent: 0 });
-    }
-};
 
 const updateProfile = async (req, res) => {
     const userId = req.user.id;
@@ -315,4 +280,4 @@ const deleteMyAccount = async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser, googleLogin, getNotifications, handleRefreshToken, logoutUser,  updateProfile, getUserPublicProfile, deleteMyAccount};
+module.exports = { registerUser, loginUser, googleLogin, handleRefreshToken, logoutUser,  updateProfile, getUserPublicProfile, deleteMyAccount};

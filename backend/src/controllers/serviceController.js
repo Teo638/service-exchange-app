@@ -26,69 +26,74 @@ const getAllServices = async (req, res) => {
 
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
-
     const offset = (page - 1) * limit;
 
     try {
-        let queryText = `
-            SELECT services.*, users.name as provider_name, users.avatar_url as provider_avatar,
-            (SELECT COUNT(*)::int FROM public_questions WHERE service_id = services.id AND is_read = false) as unread_questions_count,
-            (SELECT COUNT(*)::int FROM reviews WHERE service_id = services.id AND is_read = false) as unread_reviews_count,
-            (SELECT AVG(rating)::float FROM reviews WHERE service_id = services.id) as avg_rating
-            FROM services 
-            JOIN users ON services.user_id = users.id 
-            WHERE 1=1`; 
-        
+        let whereClause = ' WHERE 1=1';
         let queryParams = [];
 
-        
         if (search) {
             queryParams.push(`%${search}%`);
-            queryText += ` AND (services.title ILIKE $${queryParams.length} OR services.description ILIKE $${queryParams.length})`;
+            whereClause += ` AND (s.title ILIKE $${queryParams.length} OR s.description ILIKE $${queryParams.length})`;
         }
 
         if (category) {
             queryParams.push(category);
-            queryText += ` AND services.category = $${queryParams.length}`;
+            whereClause += ` AND s.category = $${queryParams.length}`;
         }
 
         if (location) {
             queryParams.push(location);
-            queryText += ` AND services.location ILIKE $${queryParams.length}`;
+            whereClause += ` AND s.location ILIKE $${queryParams.length}`;
         }
 
         if (minPrice) {
             queryParams.push(minPrice);
-            queryText += ` AND services.price >= $${queryParams.length}`;
+            whereClause += ` AND s.price >= $${queryParams.length}`;
         }
 
         if (maxPrice) {
             queryParams.push(maxPrice);
-            queryText += ` AND services.price <= $${queryParams.length}`;
+            whereClause += ` AND s.price <= $${queryParams.length}`;
         }
 
         if (type) {
             queryParams.push(type);
-            queryText += ` AND services.service_type = $${queryParams.length}`;
+            whereClause += ` AND s.service_type = $${queryParams.length}`;
         }
 
-        const countText = `SELECT COUNT(*) FROM (${queryText}) AS total_query`;
+        const countText = `
+            SELECT COUNT(DISTINCT s.id)
+            FROM services s
+            JOIN users u ON s.user_id = u.id
+            ${whereClause}
+        `;
         const totalCountResult = await pool.query(countText, queryParams);
         const totalCount = parseInt(totalCountResult.rows[0].count);
 
-        
-        queryText += ` ORDER BY services.created_at DESC LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
+        const mainQuery = `
+            SELECT s.*, u.name AS provider_name, u.avatar_url AS provider_avatar,
+                   COUNT(DISTINCT pq.id) FILTER (WHERE pq.is_read = false)::int  AS unread_questions_count,
+                   COUNT(DISTINCT r.id)  FILTER (WHERE r.is_read = false)::int   AS unread_reviews_count,
+                   AVG(r.rating)::float                                           AS avg_rating
+            FROM services s
+            JOIN users u ON s.user_id = u.id
+            LEFT JOIN public_questions pq ON pq.service_id = s.id
+            LEFT JOIN reviews r ON r.service_id = s.id
+            ${whereClause}
+            GROUP BY s.id, u.name, u.avatar_url
+            ORDER BY s.created_at DESC
+            LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+        `;
         queryParams.push(limit, offset);
 
-        const services = await pool.query(queryText, queryParams);
-
-        
+        const services = await pool.query(mainQuery, queryParams);
 
         res.json({
             services: services.rows,
             pagination: {
                 totalServices: totalCount,
-                currentPage: parseInt(page),
+                currentPage: page,
                 totalPages: Math.ceil(totalCount / limit)
             }
         });

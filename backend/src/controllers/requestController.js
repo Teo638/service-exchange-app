@@ -1,18 +1,26 @@
     const pool = require('../config/db');
 
+    const VALID_STATUSES = ['accepted', 'rejected', 'completed'];
+
 
     const sendRequest = async (req, res) => {
         const { service_id, preferred_time, message = null } = req.body;
         const buyer_id = req.user.id;
 
         try {
-            
             const service = await pool.query('SELECT * FROM services WHERE id = $1', [service_id]);
             if (service.rows.length === 0) return res.status(404).json({ message: "Usluga nije pronađena." });
 
-            
             if (service.rows[0].user_id === buyer_id) {
                 return res.status(400).json({ message: "Ne možete poslati zahtjev za vlastitu uslugu." });
+            }
+
+            const existing = await pool.query(
+                "SELECT id FROM requests WHERE service_id = $1 AND buyer_id = $2 AND status = 'pending'",
+                [service_id, buyer_id]
+            );
+            if (existing.rows.length > 0) {
+                return res.status(400).json({ message: "Već imate aktivan zahtjev za ovu uslugu." });
             }
 
             const newRequest = await pool.query(
@@ -79,8 +87,11 @@
         const { status } = req.body; 
         const userId = req.user.id;
 
+        if (!VALID_STATUSES.includes(status)) {
+        return res.status(400).json({ message: `Nevažeći status. Dozvoljeno: ${VALID_STATUSES.join(', ')}.` });
+        }
+
         try {
-            
             const request = await pool.query(
                 `SELECT requests.*, services.user_id as seller_id FROM requests 
                 JOIN services ON requests.service_id = services.id 
@@ -108,7 +119,6 @@
 
     try {
         if (type === 'received') {
-            
             await pool.query(
                 'UPDATE requests SET is_read_by_seller = true FROM services WHERE requests.service_id = services.id AND services.user_id = $1', 
                 [userId]
@@ -129,7 +139,6 @@ const deleteReceivedRequest = async (req, res) => {
     const userId = req.user.id; 
 
     try {
-        
         const request = await pool.query(
             `SELECT requests.*, services.user_id as seller_id 
              FROM requests 

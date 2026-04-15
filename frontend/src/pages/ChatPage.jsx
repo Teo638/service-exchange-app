@@ -22,7 +22,15 @@ function ChatPage() {
       socket.current.emit('addUser', user.id)
     }
 
-    socket.current.on('getMessage', (data) => {
+    return () => {
+      socket.current.disconnect()
+    }
+  }, [user])
+
+  useEffect(() => {
+    if (!socket.current) return
+
+    const handler = (data) => {
       if (activeChat === data.senderId.toString()) {
         setMessages((prev) => [...prev, {
           sender_id: data.senderId,
@@ -31,12 +39,14 @@ function ChatPage() {
         }])
       }
       fetchContacts()
-    })
+    }
+
+    socket.current.on('getMessage', handler)
 
     return () => {
-      socket.current.disconnect()
+      socket.current.off('getMessage', handler)
     }
-  }, [user, activeChat])
+  }, [activeChat])
 
   const fetchContacts = async () => {
     try {
@@ -146,7 +156,7 @@ function ChatPage() {
       <div className="flex-1 bg-white rounded-3xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
         {activeChat ? (
           <>
-            <div onClick={() => navigate(`/profile/${ activeChat }`)} className="p-5 border-b border-gray-50 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition">
+            <div onClick={() => navigate(`/profile/${activeChat}`)} className="p-5 border-b border-gray-50 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition">
               <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 uppercase text-sm">
                 {contacts.find(c => c.id.toString() === activeChat)?.name.charAt(0)}
               </div>
@@ -160,7 +170,7 @@ function ChatPage() {
                 <div
                   key={index}
                   className={`flex ${m.sender_id === user.id ? 'justify-end' : 'justify-start'}`}
-                  ref={scrollRef}
+                  ref={index === messages.length - 1 ? scrollRef : null}
                 >
                   <div className={`max-w-[70%] p-3 rounded-2xl text-sm ${m.sender_id === user.id ? 'bg-orange-500 text-white rounded-tr-none' : 'bg-white text-slate-700 shadow-sm border border-gray-100 rounded-tl-none'}`}>
                     {m.content}

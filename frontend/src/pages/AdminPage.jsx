@@ -3,6 +3,7 @@ import api from '../api'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Users, BarChart3, ShieldAlert, Trash2, UserPlus, UserMinus, PieChart } from 'lucide-react'
+import ConfirmModal from '../components/ConfirmModal'
 
 function AdminPage() {
   const { user } = useAuth()
@@ -12,6 +13,9 @@ function AdminPage() {
   const [extendedStats, setExtendedStats] = useState(null)
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
+  const [actionMessage, setActionMessage] = useState('')
+  const [actionError, setActionError] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', onConfirm: null })
 
   useEffect(() => {
     if (!user || !user.is_admin) {
@@ -39,25 +43,36 @@ function AdminPage() {
     }
   }
 
-  const handleDeleteUser = async (userId) => {
-    if (!window.confirm('TRAJNO BRISANJE: Jeste li sigurni? Svi oglasi i podaci ovog korisnika bit će obrisani.')) return
-    try {
-      await api.delete(`/admin/users/${userId}`)
-      setUsers(users.filter(u => u.id !== userId))
-      fetchAdminData()
-    } catch (err) {
-      alert(err.response?.data?.message || "Greška pri brisanju korisnika.")
-    }
+  const handleDeleteUser = (userId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: 'TRAJNO BRISANJE: Jeste li sigurni? Svi oglasi i podaci ovog korisnika bit će obrisani.',
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, message: '', onConfirm: null })
+        try {
+          await api.delete(`/admin/users/${userId}`)
+          setUsers(users.filter(u => u.id !== userId))
+          setActionMessage('Korisnik je uspješno obrisan.')
+          setActionError('')
+          fetchAdminData()
+        } catch (err) {
+          setActionError(err.response?.data?.message || "Greška pri brisanju korisnika.")
+          setActionMessage('')
+        }
+      }
+    })
   }
 
   const handleToggleRole = async (userId) => {
     try {
       const res = await api.patch(`/admin/users/${userId}/role`)
-      alert(res.data.message)
+      setActionMessage(res.data.message)
+      setActionError('')
       const usersRes = await api.get('/admin/users')
       setUsers(usersRes.data)
     } catch (err) {
-      alert("Greška pri promjeni uloge.")
+      setActionError("Greška pri promjeni uloge.")
+      setActionMessage('')
     }
   }
 
@@ -73,7 +88,6 @@ function AdminPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4">
-        {/* Tab Navigacija */}
         <div className="flex gap-4 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-fit mx-auto">
           <button
             onClick={() => setActiveTab('stats')}
@@ -88,6 +102,18 @@ function AdminPage() {
             <Users size={18} /> Korisnici
           </button>
         </div>
+
+        {actionMessage && (
+          <div className="mb-4 bg-green-50 text-green-700 border border-green-200 rounded-xl px-4 py-3 text-sm font-medium max-w-xl mx-auto text-center">
+            {actionMessage}
+          </div>
+        )}
+        {actionError && (
+          <div className="mb-4 bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium max-w-xl mx-auto text-center">
+            {actionError}
+          </div>
+        )}
+
 
         {activeTab === 'stats' && stats && (
           <div className="space-y-8 animate-in fade-in duration-500">
@@ -172,6 +198,13 @@ function AdminPage() {
           </div>
         )}
       </div>
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          message={confirmModal.message}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal({ isOpen: false, message: '', onConfirm: null })}
+        />
+      )}
     </div>
   )
 }

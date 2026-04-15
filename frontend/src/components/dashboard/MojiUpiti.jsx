@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react'
 import api from '../../api'
 import { useAuth } from '../../context/AuthContext'
+import ReviewModal from './ReviewModal'
 
 function MojiUpiti() {
   const { fetchNotifications } = useAuth()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
-
   const [selectedRequestId, setSelectedRequestId] = useState(null)
-  const [rating, setRating] = useState(5)
-  const [comment, setComment] = useState('')
-  const [submitting, setSubmitting] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   const fetchRequests = async () => {
     try {
       const res = await api.get('/requests/sent')
-      console.log("Moji upiti podaci:", res.data)
       setRequests(res.data)
     } catch (err) {
       console.error(err)
@@ -35,26 +32,11 @@ function MojiUpiti() {
     }
   }, [])
 
-  const handleReviewSubmit = async (e) => {
-    e.preventDefault()
-    setSubmitting(true)
-    try {
-      await api.post('/reviews', {
-        request_id: selectedRequestId,
-        rating,
-        comment
-      })
-      alert('Hvala! Recenzija je uspješno poslana.')
-      setSelectedRequestId(null)
-      setComment('')
-      setRating(5)
-      fetchRequests()
-    } catch (err) {
-      console.error(err)
-      alert(err.response?.data?.message || 'Greška pri slanju recenzije.')
-    } finally {
-      setSubmitting(false)
-    }
+  const handleReviewSuccess = () => {
+    setSelectedRequestId(null)
+    setSuccessMessage('Hvala! Recenzija je uspješno poslana.')
+    fetchRequests()
+    setTimeout(() => setSuccessMessage(''), 4000)
   }
 
   const statusBadge = (status) => {
@@ -84,6 +66,12 @@ function MojiUpiti() {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-bold text-slate-800 mb-6">Moji upiti ({requests.length})</h2>
       </div>
+
+      {successMessage && (
+        <div className="mb-4 bg-green-50 text-green-700 border border-green-200 rounded-xl px-4 py-3 text-sm font-medium">
+          {successMessage}
+        </div>
+      )}
 
       {requests.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
@@ -139,58 +127,11 @@ function MojiUpiti() {
       )}
 
       {selectedRequestId && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200">
-            <h3 className="text-2xl font-bold text-slate-800 mb-2">Ocjenite uslugu</h3>
-            <p className="text-slate-500 mb-6 text-sm">Podijelite svoje iskustvo s ostalim korisnicima.</p>
-
-            <form onSubmit={handleReviewSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Vaša ocjena</label>
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <button
-                      key={num}
-                      type="button"
-                      onClick={() => setRating(num)}
-                      className={`text-3xl transition-all ${rating >= num ? 'text-yellow-400 scale-110' : 'text-slate-200 hover:text-slate-300'}`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-2">Komentar</label>
-                <textarea
-                  className="w-full border border-slate-200 rounded-2xl p-4 h-32 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-700 bg-slate-50 resize-none"
-                  placeholder="Što vam se svidjelo, a što ne?"
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRequestId(null)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors"
-                >
-                  Odustani
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
-                >
-                  {submitting ? 'Slanje...' : 'Spremi'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <ReviewModal
+          requestId={selectedRequestId}
+          onClose={() => setSelectedRequestId(null)}
+          onSuccess={handleReviewSuccess}
+        />
       )}
     </div>
   )

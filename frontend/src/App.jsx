@@ -9,6 +9,7 @@ import ChatPage from './pages/ChatPage'
 import Navbar from './components/Navbar'
 import EditProfile from './pages/EditProfile'
 import AdminPage from './pages/AdminPage'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
@@ -19,12 +20,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/services/:id" element={<ServiceDetailsPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile/:id" element={<ProfilePage />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/chat/:receiverId" element={<ChatPage />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+        <Route path="/chat/:receiverId" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+        <Route path="/edit-profile" element={<ProtectedRoute><EditProfile /></ProtectedRoute>} />
+        <Route path="/admin" element={<ProtectedRoute adminOnly><AdminPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   )

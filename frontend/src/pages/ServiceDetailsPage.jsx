@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
+import ConfirmModal from '../components/ConfirmModal'
 
 const categoryIcons = {
   'IT': '💻', 'Edukacija': '📚', 'Prijevod': '🌐', 'Dizajn': '🎨',
@@ -26,6 +27,7 @@ function ServiceDetailsPage() {
   const [message, setMessage] = useState('')
   const [preferredDate, setPreferredDate] = useState('')
   const [preferredHour, setPreferredHour] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', onConfirm: null })
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -101,28 +103,37 @@ function ServiceDetailsPage() {
     }
   }
 
-  const handleDeleteQuestion = async (questionId) => {
-    if (!window.confirm('Jeste li sigurni da želite obrisati ovo pitanje?')) return;
-    try {
-      await api.delete(`/questions/${questionId}`);
-      setQuestions(questions.filter(q => q.id !== questionId));
-    } catch (err) {
-      console.error("Greška pri brisanju pitanja:", err);
-      alert(err.response?.data?.message || "Nije moguće obrisati pitanje.");
-    }
-  };
+  const handleDeleteQuestion = (questionId) => {
+    setConfirmModal({
+      isOpen: true,
+      message: 'Jeste li sigurni da želite obrisati ovo pitanje?',
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, message: '', onConfirm: null })
+        try {
+          await api.delete(`/questions/${questionId}`);
+          setQuestions(questions.filter(q => q.id !== questionId));
+        } catch (err) {
+          setError(err.response?.data?.message || 'Nije moguće obrisati pitanje.')
+        }
+      }
+    })
+  }
 
-  const handleDeleteService = async () => {
-    if (!window.confirm('ADMIN: Jeste li sigurni da želite trajno obrisati ovu uslugu?')) return;
-    try {
-      await api.delete(`/services/${id}`);
-      alert('Usluga obrisana.');
-      navigate('/');
-    } catch (err) {
-      console.error(err);
-      alert('Greška pri brisanju usluge.');
-    }
-  };
+  const handleDeleteService = () => {
+    setConfirmModal({
+      isOpen: true,
+      message: 'ADMIN: Jeste li sigurni da želite trajno obrisati ovu uslugu?',
+      onConfirm: async () => {
+        setConfirmModal({ isOpen: false, message: '', onConfirm: null })
+        try {
+          await api.delete(`/services/${id}`);
+          navigate('/');
+        } catch (err) {
+          setError(err.response?.data?.message || 'Greška pri brisanju usluge.')
+        }
+      }
+    })
+  }
 
   if (loading) return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -240,6 +251,10 @@ function ServiceDetailsPage() {
                       Postavi pitanje
                     </button>
                   </form>
+                )}
+
+                {error && (
+                  <p className="text-red-500 text-sm mb-4">{error}</p>
                 )}
 
                 <div className="space-y-4">
@@ -456,8 +471,15 @@ function ServiceDetailsPage() {
             </div>
           </div>
         </div>
-
       </div>
+
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          message={confirmModal.message}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal({ isOpen: false, message: '', onConfirm: null })}
+        />
+      )}
     </div>
   )
 }

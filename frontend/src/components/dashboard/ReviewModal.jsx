@@ -5,21 +5,22 @@ function ReviewModal({ requestId, onClose, onSuccess }) {
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
+    setError('')
     try {
       await api.post('/reviews', {
         request_id: requestId,
         rating,
         comment
       })
-      alert('Recenzija uspješno poslana!')
       onSuccess()
     } catch (err) {
       console.error(err)
-      alert(err.response?.data?.message || 'Greška pri slanju recenzije')
+      setError(err.response?.data?.message || 'Greška pri slanju recenzije.')
     } finally {
       setLoading(false)
     }
@@ -58,6 +59,10 @@ function ReviewModal({ requestId, onClose, onSuccess }) {
               required
             />
           </div>
+
+          {error && (
+            <p className="text-red-500 text-sm">{error}</p>
+          )}
 
           <div className="flex gap-3 pt-2">
             <button

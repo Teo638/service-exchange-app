@@ -21,7 +21,7 @@ function ProfilePage() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const fetchData = async () => {
-     try {
+      try {
         setLoading(true);
         const userRes = await api.get(`/auth/user/${id}`)
         setProfile({
@@ -30,7 +30,7 @@ function ProfilePage() {
           avatar: userRes.data.avatar_url
         })
 
-        const servicesRes = await api.get('/services')
+        const servicesRes = await api.get('/services', { params: { limit: 100 } })
         const allServices = servicesRes.data.services || [];
         const userServices = allServices.filter(s => s.user_id === parseInt(id));
         setServices(userServices);
@@ -40,7 +40,7 @@ function ProfilePage() {
           setReviews(reviewsRes.data);
         }
       } catch (err) {
-         console.error("Greška pri učitavanju profila:", err)
+        console.error("Greška pri učitavanju profila:", err)
         setProfile(null)
       } finally {
         setLoading(false)

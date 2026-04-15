@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
 import { useNavigate } from 'react-router-dom'
+import ConfirmModal from '../components/ConfirmModal'
 
 function EditProfile() {
-  const { user, updateUser } = useAuth()
+  const { user, updateUser, logout } = useAuth()
   const navigate = useNavigate()
 
   const [name, setName] = useState(user?.name || '')
@@ -13,6 +14,7 @@ function EditProfile() {
   const [preview, setPreview] = useState(user?.avatar_url ? `http://localhost:5000${user.avatar_url}` : null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false })
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -46,17 +48,15 @@ function EditProfile() {
     }
   }
 
-  const handleDeleteAccount = async () => {
-    const confirmDelete = window.confirm(
-      "Jeste li sigurni da želite trajno obrisati svoj račun? Svi vaši oglasi, poruke i podaci bit će trajno uklonjeni."
-    )
+  const handleDeleteAccount = () => {
+    setConfirmModal({ isOpen: true })
+  }
 
-    if (!confirmDelete) return
-
+  const confirmDeleteAccount = async () => {
+    setConfirmModal({ isOpen: false })
     setLoading(true)
     try {
       await api.delete('/auth/account')
-      alert("Vaš račun je uspješno obrisan.")
       logout()
       navigate('/')
     } catch (err) {
@@ -120,6 +120,15 @@ function EditProfile() {
           {loading ? 'Brisanje...' : 'Obriši račun'}
         </button>
       </form>
+
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          message="Jeste li sigurni da želite trajno obrisati svoj račun? Svi vaši oglasi, poruke i podaci bit će trajno uklonjeni."
+          confirmLabel="Obriši račun"
+          onConfirm={confirmDeleteAccount}
+          onCancel={() => setConfirmModal({ isOpen: false })}
+        />
+      )}
     </div>
   )
 }

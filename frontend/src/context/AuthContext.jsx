@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   const fetchNotifications = async () => {
     if (!user) return;
     try {
-      const res = await api.get('/auth/notifications');
+      const res = await api.get('/notifications');
       setNotifications(res.data);
     } catch (err) {
       console.error("Greška pri dohvaćanju obavijesti:", err);

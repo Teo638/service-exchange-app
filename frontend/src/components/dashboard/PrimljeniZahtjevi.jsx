@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react'
 import api from '../../api'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import ConfirmModal from '../ConfirmModal'
 
 function PrimljeniZahtjevi() {
   const { fetchNotifications } = useAuth()
   const navigate = useNavigate()
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, requestId: null })
 
   const fetchRequests = async () => {
     try {
@@ -42,17 +45,22 @@ function PrimljeniZahtjevi() {
     }
   }
 
-  const handleDeleteRequest = async (id) => {
-    if (!window.confirm('Jeste li sigurni da želite obrisati ovaj zahtjev?')) return;
+  const handleDeleteRequest = (id) => {
+    setConfirmModal({ isOpen: true, requestId: id })
+  }
+
+  const confirmDeleteRequest = async () => {
+    const id = confirmModal.requestId
+    setConfirmModal({ isOpen: false, requestId: null })
     try {
       await api.delete(`/requests/${id}`);
       setRequests(requests.filter(req => req.id !== id));
       fetchNotifications();
     } catch (err) {
       console.error("Greška pri brisanju zahtjeva:", err);
-      alert("Nije moguće obrisati zahtjev.");
+      setError(err.response?.data?.message || 'Nije moguće obrisati zahtjev.')
     }
-  };
+  }
 
   const statusBadge = (status) => {
     const map = {
@@ -79,6 +87,12 @@ function PrimljeniZahtjevi() {
   return (
     <div>
       <h2 className="text-lg font-bold text-slate-800 mb-6">Primljeni zahtjevi ({requests.length})</h2>
+
+      {error && (
+        <div className="mb-4 bg-red-50 text-red-600 border border-red-200 rounded-xl px-4 py-3 text-sm font-medium">
+          {error}
+        </div>
+      )}
 
       {requests.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
@@ -174,6 +188,14 @@ function PrimljeniZahtjevi() {
             );
           })}
         </div>
+      )}
+
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          message="Jeste li sigurni da želite obrisati ovaj zahtjev?"
+          onConfirm={confirmDeleteRequest}
+          onCancel={() => setConfirmModal({ isOpen: false, requestId: null })}
+        />
       )}
     </div>
   )

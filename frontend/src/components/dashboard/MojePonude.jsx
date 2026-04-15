@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api'
 import { useNavigate } from 'react-router-dom'
+import ConfirmModal from '../ConfirmModal'
 
 function MojePonude() {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ function MojePonude() {
   const [image, setImage] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
   const [error, setError] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, serviceId: null })
   const { user } = useAuth()
 
   const categories = ['IT', 'Edukacija', 'Prijevod', 'Dizajn', 'Marketing', 'Fotografija', 'Kućni poslovi', 'Zdravlje', 'Glazba', 'Pravo', 'Finance', 'Sport']
@@ -87,8 +89,13 @@ function MojePonude() {
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Jeste li sigurni da želite obrisati ovu uslugu?')) return
+  const handleDelete = (id) => {
+    setConfirmModal({ isOpen: true, serviceId: id })
+  }
+
+  const confirmDelete = async () => {
+    const id = confirmModal.serviceId
+    setConfirmModal({ isOpen: false, serviceId: null })
     try {
       await api.delete(`/services/${id}`)
       fetchMyServices()
@@ -262,6 +269,14 @@ function MojePonude() {
             )
           })}
         </div>
+      )}
+
+      {confirmModal.isOpen && (
+        <ConfirmModal
+          message="Jeste li sigurni da želite obrisati ovu uslugu?"
+          onConfirm={confirmDelete}
+          onCancel={() => setConfirmModal({ isOpen: false, serviceId: null })}
+        />
       )}
     </div>
   )

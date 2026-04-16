@@ -25,7 +25,7 @@ const getAllServices = async (req, res) => {
     const { search, category, location, minPrice, maxPrice, type} = req.query;
 
     const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 100));
     const offset = (page - 1) * limit;
 
     try {
